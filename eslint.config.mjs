@@ -1,0 +1,48 @@
+// @ts-nocheck
+import eslint from '@eslint/js';
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
+
+export default tseslint.config(
+  {
+    ignores: ['eslint.config.mjs'],
+  },
+  eslint.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
+  eslintPluginPrettierRecommended,
+  {
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.jest,
+      },
+      sourceType: 'commonjs',
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+  {
+    rules: {
+      'prettier/prettier': ['off'], 
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-floating-promises': 'false',
+      '@typescript-eslint/no-unsafe-argument': 'false',
+        "@typescript-eslint/no-unused-vars": "off",
+        "eslint-disable @typescript-eslint/no-unsafe-member-access": "off",
+        "eslint-disable @typescript-eslint/no-unsafe-assignment": "off",
+        "no-unsafe-optional-chaining": "off",
+        // @ts-ignore
+        "eslint-disable @typescript-eslint/no-unsafe-member-access": "off",
+        "eslint-disable @typescript-eslint/no-unsafe-enum-comparison": "off",
+        "eslint-disable @typescript-eslint/no-unsafe-assignment": "off",
+        "eslint-disable @typescript-eslint/no-unsafe-return": "off",
+        "eslint-disable @typescript-eslint/no-unsafe-member-access": "off",
+        "eslint-disable @typescript-eslint/no-unsafe-return": "off",
+        "eslint-disable @typescript-eslint/no-unsafe-assignment": "off"
+
+    },
+  },
+);
