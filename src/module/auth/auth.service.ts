@@ -46,7 +46,7 @@ export class AuthService {
     });
     console.log(otp);
     
-    return { message: 'Done', user };
+    return { message: 'Done', user,otp };
   }
   private generateOTP(): number {
     return Math.floor(100000 + Math.random() * 900000);
