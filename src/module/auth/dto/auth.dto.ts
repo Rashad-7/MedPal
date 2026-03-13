@@ -111,9 +111,8 @@ export class confirmEmailDto{
     otp:string;
 }
 export class CompleteSignup{
-@IsOptional()
 @IsString()
-  bloodType?:string
+  bloodType:string
 @IsOptional()
 @IsString()
 allergies?:string
