@@ -44,6 +44,8 @@ export class AuthService {
       subject: 'Verify your account',
       html: verifyAccountTemplate(otp),
     });
+    console.log(otp);
+    
     return { message: 'Done', user };
   }
   private generateOTP(): number {

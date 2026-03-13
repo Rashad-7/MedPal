@@ -40,10 +40,11 @@ fullName:string
     @Prop({ type: Date })
     changeCredentialTime: Date
   @Prop(raw({
-    secure_url: { type: String, required: true },
-    public_id: { type: String, required: true },
+    secure_url: { type: String, required: false },
+    public_id: { type: String, required: false },
   }))
   image?: IAttachment; 
+  @Prop({type:String})
     confirmEmailOTP: string
     }
     export type UserDocument =HydratedDocument <User>
