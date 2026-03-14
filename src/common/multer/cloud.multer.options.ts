@@ -14,7 +14,7 @@ export const cloudMulterOptions = ({
     return {
         storage: diskStorage({ }),
         fileFilter: (req: Request, file: Express.Multer.File, callback: Function) => {
-            if (!['image/jpeg'].includes(file.mimetype)) {
+            if (!['image/jpeg',"image/png"].includes(file.mimetype)) {
                 return callback(new BadRequestException("in-valid format"), false);
             }
             return callback(null, true);
