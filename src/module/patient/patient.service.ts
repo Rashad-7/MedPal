@@ -23,7 +23,7 @@ export class PatientService {
 
       );
 
-      return { message: "done", user: updatedUser };
+      return { message: "done", patient };
     } catch (err) {
       console.error('Error in updateProfile:', err);
       throw new InternalServerErrorException(err.message);
