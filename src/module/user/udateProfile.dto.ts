@@ -22,4 +22,5 @@ export class UpdateProfileDto {
     @IsOptional()
   @IsEnum(GenderType)
     gender?: GenderType;
+  
 }

@@ -26,10 +26,9 @@ export class AuthService {
     private readonly jwt: TokenService,
     private readonly UserRepositoryService: UserRepositoryService<UserDocument>,
     private readonly PatientRepositoryService: PatientRepositoryService<PatientDocument>,
-
   ) {}
   async signup(body: SignupDto) {
-    const { email, password, fullName, DOB,gender,phone } = body;
+    const { email, password, fullName, DOB, gender, phone, address } = body;
     const otp = this.generateOTP();
     await this.UserRepositoryService.checkDuplicateEmail({ email });
     const user = await this.UserRepositoryService.create({
@@ -39,6 +38,7 @@ export class AuthService {
       gender,
       DOB,
       phone,
+      address,
       confirmEmailOTP: `${otp}`,
     });
     sendEmail({
@@ -47,43 +47,50 @@ export class AuthService {
       html: verifyAccountTemplate(otp),
     });
     console.log(otp);
-    
-    return { message: 'Done', user,otp };
-  }
-    async forgetPassword(body:ForgetPasswordDto): Promise<{ message: string ,otp:number}>{
-    const {email}=body
-    const user =await this.UserRepositoryService.findOne({filter:{email,confirmEmail:{$exists:true}}})
-    if (!user) {
-      throw new NotFoundException("user not found")
-    }
-     const otp = this.generateOTP();
-    await this.UserRepositoryService.updateOne({filter:{_id:user._id},data:{forgetPasswordOtp: generateHush(`${otp}`)}})
-    sendEmail({to:email
-      ,subject:"Forget Password"
-      ,html:verifyAccountTemplate(otp)
-    })
-    return {message:"Done",otp}
-  }
-  async restPassword(body:RestPasswordDto): Promise<{ message: string} >{
-const{email,otp,password,confirmPassword}=body
-    const user =await this.UserRepositoryService.findOne({filter:{email,confirmEmail:{$exists:true}}})
-    if (!user) {
-      throw new NotFoundException("user not found")
-    }
-     if (!compareHush(otp, user.forgetPasswordOtp))
-    throw new BadRequestException('Invalid OTP');
-  user.password = password;  
 
-  await user.save(); 
+    return { message: 'Done', user, otp };
+  }
+  async forgetPassword(
+    body: ForgetPasswordDto,
+  ): Promise<{ message: string; otp: number }> {
+    const { email } = body;
+    const user = await this.UserRepositoryService.findOne({
+      filter: { email, confirmEmail: { $exists: true } },
+    });
+    if (!user) {
+      throw new NotFoundException('user not found');
+    }
+    const otp = this.generateOTP();
     await this.UserRepositoryService.updateOne({
-  filter: { _id: user._id },
-  data: { $unset: { forgetPasswordOtp: 0 } }
+      filter: { _id: user._id },
+      data: { forgetPasswordOtp: generateHush(`${otp}`) },
+    });
+    sendEmail({
+      to: email,
+      subject: 'Forget Password',
+      html: verifyAccountTemplate(otp),
+    });
+    return { message: 'Done', otp };
+  }
+  async restPassword(body: RestPasswordDto): Promise<{ message: string }> {
+    const { email, otp, password, confirmPassword } = body;
+    const user = await this.UserRepositoryService.findOne({
+      filter: { email, confirmEmail: { $exists: true } },
+    });
+    if (!user) {
+      throw new NotFoundException('user not found');
+    }
+    if (!compareHush(otp, user.forgetPasswordOtp))
+      throw new BadRequestException('Invalid OTP');
+    user.password = password;
 
+    await user.save();
+    await this.UserRepositoryService.updateOne({
+      filter: { _id: user._id },
+      data: { $unset: { forgetPasswordOtp: 0 } },
     });
 
-
-
-return{message:"Done"}
+    return { message: 'Done' };
   }
 
   private generateOTP(): number {
@@ -104,19 +111,26 @@ return{message:"Done"}
     return { message: 'Done' };
   }
 
-  async completeSignup(body: CompleteSignupDto) {
-    const user = await this.UserRepositoryService.findOne({
-      filter: { confirmEmail: { $exists: true } },
-    });
+  async completeSignup(body: CompleteSignupDto,user:UserDocument) {
     if (!user) {
       throw new NotFoundException('user not found');
-    }  
-      const { chronicDiseases, allergies, bloodType}=body;
-        await this.PatientRepositoryService.create({
+    }
+      const existingPatient = await this.PatientRepositoryService.findOne({
+    filter: { userId: user._id }
+  });
   
-            chronicDiseases: chronicDiseases || [], allergies, bloodType, userId: user._id
-      });
-    return {message:'Done'}
+  if (existingPatient) throw new BadRequestException('Profile already completed');
+    const { chronicDiseases, allergies, bloodType,weight,height,note } = body;
+    await this.PatientRepositoryService.create({
+      chronicDiseases: chronicDiseases || [],
+      allergies,
+      bloodType,
+      height,
+      weight,
+      note,
+      userId: user._id,
+    });
+    return { message: 'Done' };
   }
 
   async login(body: loginDto): Promise<{

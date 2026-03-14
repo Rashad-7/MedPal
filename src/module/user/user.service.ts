@@ -1,7 +1,7 @@
 import { CloudService } from './../../common/multer/cloud.service';
 import { UserDocument } from 'src/DB/model/User.model';
 import { UserRepositoryService } from './../../DB/repository/user.repository.service';
-import { Injectable, InternalServerErrorException, NotFoundException, Req } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, Req } from '@nestjs/common';
 import mongoose from 'mongoose';
 import { UpdateProfileDto } from './udateProfile.dto';
 
@@ -16,7 +16,7 @@ export class UserService {
     
      }
 async updateImage(file: Express.Multer.File, user: UserDocument) {
-  if (!file) throw new Error('Profile image is required');
+  if (!file) throw new BadRequestException('Profile image is required');
 
   try {
     const folderId = String(Math.floor(100000 + Math.random() * 900000));

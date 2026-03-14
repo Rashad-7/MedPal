@@ -85,13 +85,18 @@ export class SignupDto {
   @MinLength(5)
   @MaxLength(50)
   fullName: string;
-  phone: string;
-  address?: string;
   @IsDate()
    @Type(() => Date) 
   DOB: Date;
   @IsEnum(GenderType)
     gender: GenderType;
+    @IsOptional()
+@IsString()
+phone?: string;
+
+@IsOptional()
+@IsString()
+address?: string;
 }
 export class loginDto{
     @IsEmail()
@@ -120,6 +125,16 @@ allergies?:string
 @IsArray()
   @Type(() => ChronicDiseasesDto) 
 chronicDiseases?:IChronicDiseases[]
+@IsOptional()
+@IsNumber()
+height?: number;
+
+@IsOptional()
+@IsNumber()
+weight?: number;
+@IsString()
+@IsOptional()
+note?:string
 }
 export class ForgetPasswordDto{
   @IsEmail()

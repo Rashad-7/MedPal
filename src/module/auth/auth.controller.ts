@@ -4,7 +4,8 @@ import { AuthService } from "./auth.service";
 import { CompleteSignupDto, confirmEmailDto, ForgetPasswordDto, loginDto, RestPasswordDto, SignupDto } from "./dto/auth.dto";
 import { log } from "console";
 import { Auth } from "src/common/decorator/auth.decorator";
-import { RoleType } from "src/DB/model/User.model";
+import { RoleType, type UserDocument } from "src/DB/model/User.model";
+import { User } from "src/common/decorator/user.decorator";
  
 
 @Controller('auth')
@@ -36,8 +37,8 @@ confirmEmail(@Body() body:confirmEmailDto):any{
 @Patch('completeSignup')
 
 
-completeSignup(@Body() body:CompleteSignupDto):any{
-    return this.authService.completeSignup(body)
+completeSignup(@Body() body:CompleteSignupDto,@User()user:UserDocument):any{
+    return this.authService.completeSignup(body,user)
 }
 @UsePipes(new ValidationPipe({ whitelist: true }))
 @Patch('forgetPassword')
