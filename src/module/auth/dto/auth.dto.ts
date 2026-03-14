@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsString, IsEmail, MinLength, IsNotEmpty, MaxLength, IsStrongPassword, Matches, IsEnum, IsOptional, IsArray, IsDate, IsIn, IsNumber, IsPositive } from 'class-validator';
+import { IsString, IsEmail, MinLength, IsNotEmpty, MaxLength, IsStrongPassword, Matches, IsEnum, IsOptional, IsArray, IsDate, IsIn, IsNumber, IsPositive, isEmail } from 'class-validator';
 import {
   registerDecorator,
   ValidationOptions,
@@ -110,7 +110,7 @@ export class confirmEmailDto{
     @MaxLength(6)
     otp:string;
 }
-export class CompleteSignup{
+export class CompleteSignupDto{
 @IsString()
   bloodType:string
 @IsOptional()
@@ -120,4 +120,23 @@ allergies?:string
 @IsArray()
   @Type(() => ChronicDiseasesDto) 
 chronicDiseases?:IChronicDiseases[]
+}
+export class ForgetPasswordDto{
+  @IsEmail()
+  email:string;
+}
+export class RestPasswordDto{
+  @IsEmail()
+  email:string;
+ @Matches(/^\d{6}$/)
+    @MinLength(6)
+    @MaxLength(6)
+    otp:string;
+     @IsString()
+  @MinLength(6)
+  @IsStrongPassword()
+  password: string;
+   @IsStrongPassword()
+  @IsMatchPassword('password', { message: 'Password do not match confirm password' })
+  confirmPassword: string;
 }

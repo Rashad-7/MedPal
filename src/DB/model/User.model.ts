@@ -46,6 +46,8 @@ fullName:string
   image?: IAttachment; 
   @Prop({type:String})
     confirmEmailOTP: string
+    @Prop({type:String})
+    forgetPasswordOtp: string
     }
     export type UserDocument =HydratedDocument <User>
   export const UserSchema = SchemaFactory.createForClass(User);
@@ -79,7 +81,13 @@ fullName:string
   if (this.isModified('confirmEmailOTP')) {
     this.confirmEmailOTP = generateHush(this.confirmEmailOTP);
   }
+   if (this.isModified('forgetPasswordOtp')) {
+    this.forgetPasswordOtp = generateHush(this.forgetPasswordOtp);
+   }
   next();
-});
+  
+}
+
+);
     return UserSchema;
   }}])

@@ -5,14 +5,16 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
-  CompleteSignup,
+  CompleteSignupDto,
   confirmEmailDto,
+  ForgetPasswordDto,
   loginDto,
+  RestPasswordDto,
   SignupDto,
 } from './dto/auth.dto';
 import { RoleType, User, UserDocument } from 'src/DB/model/User.model';
 import { UserRepositoryService } from 'src/DB/repository/user.repository.service';
-import { compareHush } from 'src/common/security/hush.security';
+import { compareHush, generateHush } from 'src/common/security/hush.security';
 import { sendEmail } from 'src/common/email/send.email';
 import { verifyAccountTemplate } from 'src/common/email/template/verifyAccountTemplate';
 import { TokenService, TokenType } from 'src/common/service/token.service';
@@ -48,6 +50,42 @@ export class AuthService {
     
     return { message: 'Done', user,otp };
   }
+    async forgetPassword(body:ForgetPasswordDto): Promise<{ message: string ,otp:number}>{
+    const {email}=body
+    const user =await this.UserRepositoryService.findOne({filter:{email,confirmEmail:{$exists:true}}})
+    if (!user) {
+      throw new NotFoundException("user not found")
+    }
+     const otp = this.generateOTP();
+    await this.UserRepositoryService.updateOne({filter:{_id:user._id},data:{forgetPasswordOtp: generateHush(`${otp}`)}})
+    sendEmail({to:email
+      ,subject:"Forget Password"
+      ,html:verifyAccountTemplate(otp)
+    })
+    return {message:"Done",otp}
+  }
+  async restPassword(body:RestPasswordDto): Promise<{ message: string} >{
+const{email,otp,password,confirmPassword}=body
+    const user =await this.UserRepositoryService.findOne({filter:{email,confirmEmail:{$exists:true}}})
+    if (!user) {
+      throw new NotFoundException("user not found")
+    }
+     if (!compareHush(otp, user.forgetPasswordOtp))
+    throw new BadRequestException('Invalid OTP');
+  user.password = password;  
+
+  await user.save(); 
+    await this.UserRepositoryService.updateOne({
+  filter: { _id: user._id },
+  data: { $unset: { forgetPasswordOtp: 0 } }
+
+    });
+
+
+
+return{message:"Done"}
+  }
+
   private generateOTP(): number {
     return Math.floor(100000 + Math.random() * 900000);
   }
@@ -66,7 +104,7 @@ export class AuthService {
     return { message: 'Done' };
   }
 
-  async completeSignup(body: CompleteSignup) {
+  async completeSignup(body: CompleteSignupDto) {
     const user = await this.UserRepositoryService.findOne({
       filter: { confirmEmail: { $exists: true } },
     });

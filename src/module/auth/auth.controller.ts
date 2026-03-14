@@ -1,7 +1,7 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Patch, Post, Req, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
 import type { Request } from "express";
 import { AuthService } from "./auth.service";
-import { CompleteSignup, confirmEmailDto, loginDto, SignupDto } from "./dto/auth.dto";
+import { CompleteSignupDto, confirmEmailDto, ForgetPasswordDto, loginDto, RestPasswordDto, SignupDto } from "./dto/auth.dto";
 import { log } from "console";
 import { Auth } from "src/common/decorator/auth.decorator";
 import { RoleType } from "src/DB/model/User.model";
@@ -36,7 +36,19 @@ confirmEmail(@Body() body:confirmEmailDto):any{
 @Patch('completeSignup')
 
 
-completeSignup(@Body() body:CompleteSignup):any{
+completeSignup(@Body() body:CompleteSignupDto):any{
     return this.authService.completeSignup(body)
+}
+@UsePipes(new ValidationPipe({ whitelist: true }))
+@Patch('forgetPassword')
+
+
+forgetPassord(@Body() body:ForgetPasswordDto): Promise<{ message: string,otp:number}>{
+    return this.authService.forgetPassword(body)
+}
+@UsePipes(new ValidationPipe({ whitelist: true }))
+@Patch('restPassword')
+restPassord(@Body() body:RestPasswordDto): Promise<{ message: string}>{
+    return this.authService.restPassword(body)
 }
 }
