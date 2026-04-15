@@ -30,7 +30,7 @@ async updateImage(file: Express.Multer.File, user: UserDocument) {
     return { message: 'done', secure_url, public_id };
   } catch (err) {
     console.error('Error in updateImage:', err);
-    throw new InternalServerErrorException(err.message);
+    throw new InternalServerErrorException(err!.message);
   }
 }
   async updateProfile(user: UserDocument, body: UpdateProfileDto) {
@@ -48,7 +48,7 @@ async updateImage(file: Express.Multer.File, user: UserDocument) {
       return { message: 'done', user: updatedUser };
     } catch (err) {
       console.error('Error in updateProfile:', err);
-      throw new InternalServerErrorException(err.message);
+      throw new InternalServerErrorException(err!.message);
     }
   }
 }

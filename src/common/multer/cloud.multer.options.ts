@@ -8,15 +8,15 @@ export const validationFile={
 }
 export const cloudMulterOptions = ({
     validation=[],
-    fileSize=1024*1024
+    fileSize=1024*1024*4
 }:{validation?:string[],fileSize?:number}): MulterOptions => {
     let basePath=`uploads/`
     return {
         storage: diskStorage({ }),
         fileFilter: (req: Request, file: Express.Multer.File, callback: Function) => {
-            if (!['image/jpeg',"image/png"].includes(file.mimetype)) {
-                return callback(new BadRequestException("in-valid format"), false);
-            }
+            // if (!['image/jpeg',"image/png"].includes(file.mimetype)||[file]) {
+            //     return callback(new BadRequestException("in-valid format"), false);
+            // }
             return callback(null, true);
         },
         limits:{

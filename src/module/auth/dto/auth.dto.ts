@@ -1,5 +1,22 @@
 import { Type } from 'class-transformer';
-import { IsString, IsEmail, MinLength, IsNotEmpty, MaxLength, IsStrongPassword, Matches, IsEnum, IsOptional, IsArray, IsDate, IsIn, IsNumber, IsPositive, isEmail } from 'class-validator';
+import {
+  IsString,
+  IsEmail,
+  MinLength,
+  IsNotEmpty,
+  MaxLength,
+  IsStrongPassword,
+  Matches,
+  IsEnum,
+  IsOptional,
+  IsArray,
+  IsDate,
+  IsIn,
+  IsNumber,
+  IsPositive,
+  isEmail,
+  IsBoolean,
+} from 'class-validator';
 import {
   registerDecorator,
   ValidationOptions,
@@ -11,7 +28,9 @@ import { GenderType, RoleType } from 'src/DB/model/User.model';
 import type { IChronicDiseases } from 'src/module/report/interface/chronicDiseases.interface';
 
 @ValidatorConstraint({ name: 'matchPasswords', async: false })
-export class IsMatchPasswordsConstraint implements ValidatorConstraintInterface {
+export class IsMatchPasswordsConstraint
+  implements ValidatorConstraintInterface
+{
   validate(value: any, args: ValidationArguments) {
     const [relatedPropertyName] = args.constraints;
     const relatedValue = (args.object as any)[relatedPropertyName];
@@ -23,7 +42,10 @@ export class IsMatchPasswordsConstraint implements ValidatorConstraintInterface 
   }
 }
 
-export function IsMatchPassword(property: string, validationOptions?: ValidationOptions) {
+export function IsMatchPassword(
+  property: string,
+  validationOptions?: ValidationOptions,
+) {
   return function (object: Object, propertyName: string) {
     registerDecorator({
       target: object.constructor,
@@ -65,7 +87,6 @@ export class AuthDto {
   @IsString()
   @MinLength(6)
   password: string;
-
 }
 
 export class SignupDto {
@@ -78,7 +99,9 @@ export class SignupDto {
   password: string;
 
   @IsStrongPassword()
-  @IsMatchPassword('password', { message: 'Password do not match confirm password' })
+  @IsMatchPassword('password', {
+    message: 'Password do not match confirm password',
+  })
   confirmPassword: string;
   @IsString()
   @IsNotEmpty()
@@ -86,20 +109,23 @@ export class SignupDto {
   @MaxLength(50)
   fullName: string;
   @IsDate()
-   @Type(() => Date) 
+  @Type(() => Date)
   DOB: Date;
   @IsEnum(GenderType)
-    gender: GenderType;
-    @IsOptional()
-@IsString()
-phone?: string;
+  gender: GenderType;
+  @IsEnum(RoleType)
+  role: RoleType;
+  @IsOptional()
+  @IsString()
+  phone?: string;
 
-@IsOptional()
-@IsString()
-address?: string;
+  @IsOptional()
+  @IsString()
+  address?: string;
+  isVerified?:boolean
 }
-export class loginDto{
-    @IsEmail()
+export class loginDto {
+  @IsEmail()
   email: string;
 
   @IsString()
@@ -107,51 +133,112 @@ export class loginDto{
   @IsStrongPassword()
   password: string;
 }
-export class confirmEmailDto{
-      @IsEmail()
+export class confirmEmailDto {
+  @IsEmail()
   email: string;
-    @Matches(/^\d{6}$/)
-    @MinLength(6)
-    @MaxLength(6)
-    otp:string;
+  @Matches(/^\d{6}$/)
+  @MinLength(6)
+  @MaxLength(6)
+  otp: string;
 }
-export class CompleteSignupDto{
-@IsString()
-  bloodType:string
-@IsOptional()
-@IsString()
-allergies?:string
-@IsOptional()
-@IsArray()
-  @Type(() => ChronicDiseasesDto) 
-chronicDiseases?:IChronicDiseases[]
-@IsOptional()
-@IsNumber()
-height?: number;
+export class CompleteSignupDto {
+  @IsString()
+  bloodType: string;
+  @IsOptional()
+  @IsString()
+  allergies?: string;
+  @IsOptional()
+  @IsArray()
+  @Type(() => ChronicDiseasesDto)
+  chronicDiseases?: IChronicDiseases[];
+  @IsOptional()
+  @IsNumber()
+  height?: number;
 
-@IsOptional()
-@IsNumber()
-weight?: number;
-@IsString()
-@IsOptional()
-note?:string
+  @IsOptional()
+  @IsNumber()
+  weight?: number;
+  @IsString()
+  @IsOptional()
+  note?: string;
 }
-export class ForgetPasswordDto{
+export class ForgetPasswordDto {
   @IsEmail()
-  email:string;
+  email: string;
 }
-export class RestPasswordDto{
+export class RestPasswordDto {
   @IsEmail()
-  email:string;
- @Matches(/^\d{6}$/)
-    @MinLength(6)
-    @MaxLength(6)
-    otp:string;
-     @IsString()
+  email: string;
+  @Matches(/^\d{6}$/)
+  @MinLength(6)
+  @MaxLength(6)
+  otp: string;
+  @IsString()
   @MinLength(6)
   @IsStrongPassword()
   password: string;
-   @IsStrongPassword()
-  @IsMatchPassword('password', { message: 'Password do not match confirm password' })
+  @IsStrongPassword()
+  @IsMatchPassword('password', {
+    message: 'Password do not match confirm password',
+  })
   confirmPassword: string;
+}
+export class SignupDocDto {
+   @IsEmail()
+  email: string;
+
+  @IsString()
+  @MinLength(6)
+  @IsStrongPassword()
+  password: string;
+
+  @IsStrongPassword()
+  @IsMatchPassword('password', {
+    message: 'Password do not match confirm password',
+  })
+  confirmPassword: string;
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(5)
+  @MaxLength(50)
+  fullName: string;
+  @IsDate()
+  @Type(() => Date)
+  DOB: Date;
+  @IsEnum(GenderType)
+  gender: GenderType;
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @IsOptional()
+  @IsString()
+  address?: string;
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(10)
+  @MaxLength(20)
+  specialization: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(5)
+  @MaxLength(50)
+  qualification: string;
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(1)
+  experienceYears: number;
+  @IsEnum(RoleType)
+  role: RoleType;
+  @IsString()
+  @IsNotEmpty()
+  licenseNumbers: number;
+  @IsOptional()
+  @IsString()
+  clinicLocation?: string;
+  proofDocument: {
+    secure_url: string;
+    public_id: string;
+  };
 }

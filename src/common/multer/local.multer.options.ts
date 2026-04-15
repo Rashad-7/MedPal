@@ -7,7 +7,7 @@ import { diskStorage } from "multer";
 import { resolve } from "path";
 export const validationFile={
     image:['image/jpeg','image/png','image/gif'],
-    file:['plain/text','application/json']
+    file:['plain/text','application/json','application/pdf']
 }
 export const localMulterOptions = ({
     path='public',

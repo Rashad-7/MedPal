@@ -7,6 +7,7 @@ async function bootstrap() {
   const port: number | string = process.env.PORT! ;
   const app = await NestFactory.create(AppModule);
   // app.use(setDefaulteLangauge)
+  
   await app.listen(port);
   console.log(`Server running on port ${port}`);
 }

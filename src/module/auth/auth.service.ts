@@ -1,4 +1,5 @@
-import { Patch } from '@nestjs/common';
+import { CloudService } from './../../common/multer/cloud.service';
+import { InternalServerErrorException, Patch, Body } from '@nestjs/common';
 import {
   BadRequestException,
   Injectable,
@@ -10,6 +11,7 @@ import {
   ForgetPasswordDto,
   loginDto,
   RestPasswordDto,
+  SignupDocDto,
   SignupDto,
 } from './dto/auth.dto';
 import { RoleType, User, UserDocument } from 'src/DB/model/User.model';
@@ -19,16 +21,20 @@ import { sendEmail } from 'src/common/email/send.email';
 import { verifyAccountTemplate } from 'src/common/email/template/verifyAccountTemplate';
 import { TokenService, TokenType } from 'src/common/service/token.service';
 import { PatientRepositoryService } from 'src/DB/repository/patient.repository.service';
+import { DoctorRepositoryService } from 'src/DB/repository/doctor.repository.service';
 import { PatientDocument } from 'src/DB/model/patient.model';
+import { DoctorDocument } from 'src/DB/model/doctor.model';
 @Injectable()
 export class AuthService {
   constructor(
     private readonly jwt: TokenService,
     private readonly UserRepositoryService: UserRepositoryService<UserDocument>,
     private readonly PatientRepositoryService: PatientRepositoryService<PatientDocument>,
+    private readonly doctorRepositoryService: DoctorRepositoryService<DoctorDocument>,
+    private readonly CloudService: CloudService,
   ) {}
   async signup(body: SignupDto) {
-    const { email, password, fullName, DOB, gender, phone, address } = body;
+    const { email, password, fullName, DOB, gender, phone, address ,role} = body;
     const otp = this.generateOTP();
     await this.UserRepositoryService.checkDuplicateEmail({ email });
     const user = await this.UserRepositoryService.create({
@@ -38,7 +44,9 @@ export class AuthService {
       gender,
       DOB,
       phone,
+      role,
       address,
+      isVerified:true,
       confirmEmailOTP: `${otp}`,
     });
     sendEmail({
@@ -49,6 +57,39 @@ export class AuthService {
     console.log(otp);
 
     return { message: 'Done', user, otp };
+  }
+  async signupDoc(body:SignupDocDto,file: Express.Multer.File) {
+    const { email, password, fullName, DOB, gender, phone, address,role } = body;
+    await this.UserRepositoryService.checkDuplicateEmail({ email });
+    const user = await this.UserRepositoryService.create({
+      fullName,
+      email,
+      password,
+      gender,
+      DOB,
+      phone,
+      address,
+      role,
+      isVerified:false
+    });
+   const {proofDocument,clinicLocation,licenseNumbers,specialization,qualification,experienceYears}=body;
+
+const folderId = String(Math.floor(100000 + Math.random() * 900000));
+
+const { secure_url, public_id } = await this.CloudService.uploadFile(file, {
+  folder: `${process.env.APP_NAME}/users/${user._id}/profile/${folderId}`,
+});
+
+const doctor = await this.doctorRepositoryService.create({
+  userId: user._id,
+  clinicLocation,
+  licenseNumbers,
+  specialization,
+  qualification,
+  experienceYears,
+  proofDocument: { secure_url, public_id },
+});
+   return { message: 'Done', user,doctor};
   }
   async forgetPassword(
     body: ForgetPasswordDto,
@@ -144,6 +185,37 @@ export class AuthService {
     if (!user) throw new NotFoundException('User not found');
     if (!user.confirmEmail)
       throw new BadRequestException('Please confirm your email');
+    if (!compareHush(password, user.password))
+      throw new BadRequestException('Invalid password or email');
+    const accessToken = this.jwt.sign({
+      payload: { id: user._id },
+      role: user.role,
+    });
+    const refreshToken = this.jwt.sign({
+      payload: { id: user._id },
+      role: user.role,
+      type: TokenType.REFRESH,
+    });
+    return {
+      message: 'Login successful',
+      token: { accessToken, refreshToken },
+    };
+  }
+   async loginDoc(body: loginDto): Promise<{
+    message: string;
+    token: { accessToken: string; refreshToken: string };
+  }> {
+    const { email, password } = body;
+    const user = await this.UserRepositoryService.findOne({
+      filter: { email },
+    });
+    if (!user) throw new NotFoundException('User not found');
+    if (user.role!=RoleType.ADMIN) {
+      throw new BadRequestException("in-vaild account")
+    }
+    if (!user.isVerified) {
+      throw new BadRequestException("Not Verified yet")
+    }
     if (!compareHush(password, user.password))
       throw new BadRequestException('Invalid password or email');
     const accessToken = this.jwt.sign({

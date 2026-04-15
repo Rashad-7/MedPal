@@ -8,13 +8,13 @@ export enum RequestStatus {
 @Schema({ timestamps: { createdAt: true, updatedAt: false } })
 export class Request {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  senderId: Types.ObjectId; 
+  senderId: Types.ObjectId;
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   receiverId: Types.ObjectId;
   @Prop({ type: String, enum: RequestStatus, default: RequestStatus.PENDING })
-  status: RequestStatus; 
+  status: RequestStatus;
   @Prop({ type: Date, default: Date.now })
-  createdAt: Date; 
+  createdAt: Date;
 }
 export const RequestSchema = SchemaFactory.createForClass(Request);
-export type RequestDocument = HydratedDocument <Request> ;
+export type RequestDocument = HydratedDocument<Request>;
