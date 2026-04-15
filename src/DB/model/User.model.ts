@@ -46,6 +46,7 @@ export class User {
   role: RoleType;
   @Prop({ type: Boolean, required: true,default:false })
   isVerified?: boolean
+    @Prop({ type: Date })
   confirmEmail: Date;
   @Prop({ type: Date })
   changeCredentialTime: Date;
