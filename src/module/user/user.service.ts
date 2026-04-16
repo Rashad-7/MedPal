@@ -51,4 +51,7 @@ async updateImage(file: Express.Multer.File, user: UserDocument) {
       throw new InternalServerErrorException(err!.message);
     }
   }
+  async getDoctors(){
+
+  }
 }

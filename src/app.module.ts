@@ -11,6 +11,7 @@ import { UserController } from './module/user/user.controller';
 import { UserModule } from './module/user/user.module';
 import { GlobalAuthModule } from './common/modules/auth.global.module';
 import { PatientModule } from './module/patient/patient.module';
+import { DoctorModule } from './module/doctor/doctor.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ envFilePath:resolve("./config/.env.dev"),isGlobal: true }),
@@ -19,6 +20,7 @@ import { PatientModule } from './module/patient/patient.module';
      AuthModule,
      UserModule,
      PatientModule,
+     DoctorModule,
   ],
   controllers: [AppController],
   providers: [AppService],
