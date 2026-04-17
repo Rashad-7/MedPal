@@ -23,6 +23,7 @@ export enum RoleType {
   toJSON: { versionKey: true },
 })
 export class User {
+  @Prop({ minLength: 2, maxLength: 30, trim: true, type: String })
   fullName: string;
   @Prop({ required: true, unique: true, type: String })
   email: string;
@@ -30,10 +31,6 @@ export class User {
   @Prop({ required: true, type: String })
   password: string;
 
-  @Prop({ minLength: 2, maxLength: 30, trim: true, type: String })
-  firstName: string;
-  @Prop({ minLength: 2, maxLength: 30, trim: true, type: String })
-  lastName: string;
   @Prop({ type: String })
   address: string;
   @Prop({ type: Date })
@@ -64,15 +61,9 @@ export class User {
 }
 export type UserDocument = HydratedDocument<User>;
 export const UserSchema = SchemaFactory.createForClass(User);
-UserSchema.virtual('fullName')
-  .get(function (this: User) {
-    return `${this.firstName} ${this.lastName}`;
-  })
-  .set(function (this: User, name: string) {
-    const [firstName, lastName] = name.split(' ');
-    this.firstName = firstName;
-    this.lastName = lastName;
-  });
+UserSchema.set('toJSON', { virtuals: true });
+UserSchema.set('toObject', { virtuals: true });
+
 //   UserSchema.pre('save', function (next) {
 //   if (this.isModified('password')) {
 //     this.password = generateHush(this.password);
