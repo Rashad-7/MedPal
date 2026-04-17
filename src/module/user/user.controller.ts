@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, Patch, Post, Req, SetMetadata, UploadedFile, UploadedFiles, UseGuards, UseInterceptors, UsePipes } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Patch, Post, Query, Req, SetMetadata, UploadedFile, UploadedFiles, UseGuards, UseInterceptors, UsePipes } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from '../../common/decorator/user.decorator';
 import { RoleType, type UserDocument } from '../../DB/model/User.model';
@@ -10,6 +10,7 @@ import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express
 import { cloudMulterOptions, validationFile } from 'src/common/multer/cloud.multer.options';
 import { ValidationPipe as NestValidationPipe } from '@nestjs/common';
 import { UpdateProfileDto } from './udateProfile.dto';
+import { GetDoctorsDto } from './dto/user.dto';
 
 @Controller('user')
 export class UserController {
@@ -46,5 +47,9 @@ async updateProfileImage(
   ) {
     return this.userService.updateProfile(user, body);
   }
-
+@Auth([RoleType.USER,RoleType.ADMIN])
+@Get("getDoctors")
+async getDoctors(@Query() query:GetDoctorsDto){
+return this.userService.getDoctors(query)
+}
 }

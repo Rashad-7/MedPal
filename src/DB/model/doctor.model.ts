@@ -31,8 +31,8 @@ export class Doctor {
     }),
   )
   proofDocument: IAttachment;
-  @Prop({ type: [String], required: false })
-  patiants?: string[];
+  @Prop({ type: [mongoose.Types.ObjectId], required: false })
+  patiants?: [{ type: mongoose.Types.ObjectId, ref: "User" }]
   
 }
 

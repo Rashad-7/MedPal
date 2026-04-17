@@ -18,4 +18,24 @@ export abstract class DataBaseRepository<TDocument> {
     async updateOne({filter,data}:{filter:FilterQuery<TDocument>,data:any}):Promise<UpdateWriteOpResult>{
         return await this.model.updateOne(filter,data);
     }
+        async find({
+  filter = {},
+  select = "",
+  populate = [],
+  skip = 0,
+  limit= 10,
+}: {
+  filter?: FilterQuery<any>;
+  select?: string;
+  populate?: PopulateOptions | PopulateOptions[];
+  skip?: number;
+  limit?: number;
+}) {
+  return await this.model
+    .find(filter)
+    .select(select)
+    .populate(populate)
+    .skip(skip)
+    .limit(limit);
+}
 }

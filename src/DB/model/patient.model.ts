@@ -53,6 +53,8 @@ note?:string
   required: false,
 })
 chronicDiseases: ChronicDisease[];
+  @Prop({ type: [mongoose.Types.ObjectId], required: false })
+  doctors?: [{ type: mongoose.Types.ObjectId, ref: "User" }]
 
 }
 
