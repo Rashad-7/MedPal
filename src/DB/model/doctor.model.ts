@@ -31,9 +31,8 @@ export class Doctor {
     }),
   )
   proofDocument: IAttachment;
-  @Prop({ type: [mongoose.Types.ObjectId], required: false })
-  patiants?: [{ type: mongoose.Types.ObjectId, ref: "User" }]
-  
+  @Prop({ type: [mongoose.Types.ObjectId], ref: 'User', required: false, default: [] })
+  patients?: mongoose.Types.ObjectId[];
 }
 
 export const DoctorSchema = SchemaFactory.createForClass(Doctor);

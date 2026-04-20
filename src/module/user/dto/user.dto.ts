@@ -1,5 +1,8 @@
-import { IsOptional, IsString, IsNumber, Min, Max } from 'class-validator';
+import { IsOptional, IsString, IsNumber, Min, Max, IsMongoId, IsNotEmpty } from 'class-validator';
 import { Type } from 'class-transformer';
+import mongoose, { Types } from 'mongoose';
+import { IsEnum } from 'class-validator';
+import { RequestStatus } from 'src/DB/model/Req.model';
 
 export class GetDoctorsDto {
   
@@ -43,3 +46,9 @@ export class GetDoctorsDto {
   @Min(1)
   limit?: string;
 }
+export class SendRequestDto {
+  @IsMongoId()
+  receiverId: mongoose.Types.ObjectId; // doctorId
+}
+
+ 

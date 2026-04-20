@@ -1,4 +1,5 @@
 import { FilterQuery, Model, PopulateOptions, UpdateWriteOpResult } from "mongoose";
+import mongoose from 'mongoose';
 export abstract class DataBaseRepository<TDocument> {
     protected constructor(protected readonly model:Model<TDocument>) {}
 
@@ -38,4 +39,24 @@ export abstract class DataBaseRepository<TDocument> {
     .skip(skip)
     .limit(limit);
 }
+async findById({
+  id ,
+  select = "",
+  populate = [],
+}: {
+  id?:mongoose.Types.ObjectId ;
+  select?: string;
+  populate?: PopulateOptions | PopulateOptions[];
+}) {
+  const document = await this.model
+    .findById(id)
+    .select(select)
+    .populate(populate);
+
+  return document;
+}
+// const deleteOne = async ({ model, filter = {} } = {}) => {
+//     const document = await model.deleteOne(filter);
+//     return document;
+// }
 }

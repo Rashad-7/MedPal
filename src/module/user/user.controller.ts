@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, Patch, Post, Query, Req, SetMetadata, UploadedFile, UploadedFiles, UseGuards, UseInterceptors, UsePipes } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, Patch, Post, Query, Req, SetMetadata, UploadedFile, UploadedFiles, UseGuards, UseInterceptors, UsePipes } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from '../../common/decorator/user.decorator';
 import { RoleType, type UserDocument } from '../../DB/model/User.model';
@@ -10,7 +10,8 @@ import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express
 import { cloudMulterOptions, validationFile } from 'src/common/multer/cloud.multer.options';
 import { ValidationPipe as NestValidationPipe } from '@nestjs/common';
 import { UpdateProfileDto } from './udateProfile.dto';
-import { GetDoctorsDto } from './dto/user.dto';
+import { GetDoctorsDto, SendRequestDto } from './dto/user.dto';
+import mongoose from 'mongoose';
 
 @Controller('user')
 export class UserController {
@@ -52,4 +53,10 @@ async updateProfileImage(
 async getDoctors(@Query() query:GetDoctorsDto){
 return this.userService.getDoctors(query)
 }
+@Auth([RoleType.USER,RoleType.ADMIN])
+@Patch("sendReq/:receiverId")
+async sendReq(@Param() param:SendRequestDto,@User("_id")senderId:mongoose.Types.ObjectId){
+return this.userService.sendRequest(senderId,param)
+}
+
 }

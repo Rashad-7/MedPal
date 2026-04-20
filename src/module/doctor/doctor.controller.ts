@@ -1,8 +1,10 @@
-import { Controller, Get, Headers, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Headers, Param, Patch, UseInterceptors } from '@nestjs/common';
 import { DoctorService } from './doctor.service';
 import { Auth } from 'src/common/decorator/auth.decorator';
 import { RoleType, type UserDocument } from 'src/DB/model/User.model';
 import { User } from 'src/common/decorator/user.decorator';
+import { UpdateRequestStatusDto } from './dto/doctor.dto';
+import mongoose from 'mongoose';
 
 @Controller('doctor')
 export class DoctorController {
@@ -14,5 +16,21 @@ export class DoctorController {
     @User()user:UserDocument
   ) {
     return this.doctorService.profile(user); 
+  }
+    @Patch('request/:requestId/accept')
+ @Auth([RoleType.ADMIN])
+  async acceptRequest(
+    @Param('requestId') requestId: mongoose.Types.ObjectId,
+    @User() user: UserDocument,
+  ): Promise<UpdateRequestStatusDto> {;
+    return this.doctorService.acceptRequest(requestId, user);
+  }
+ 
+  @Patch('request/:requestId/reject')
+  async rejectRequest(
+    @Param('requestId') requestId: mongoose.Types.ObjectId,
+  @User() user: UserDocument,
+  ): Promise<UpdateRequestStatusDto> {
+    return this.doctorService.rejectRequest(requestId, user);
   }
 }
