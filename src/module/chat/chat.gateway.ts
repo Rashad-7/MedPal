@@ -31,7 +31,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   async handleConnection(client: Socket) {
       try {
-    // جيب الـ token من أي مكان ممكن ييجي منه
     const authHeader =
       client.handshake.headers.authorization ||
       client.handshake.auth?.token ||

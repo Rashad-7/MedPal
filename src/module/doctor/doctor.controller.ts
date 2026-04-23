@@ -5,6 +5,7 @@ import { RoleType, type UserDocument } from 'src/DB/model/User.model';
 import { User } from 'src/common/decorator/user.decorator';
 import { UpdateRequestStatusDto } from './dto/doctor.dto';
 import mongoose from 'mongoose';
+import type { DoctorDocument } from 'src/DB/model/doctor.model';
 
 @Controller('doctor')
 export class DoctorController {
@@ -33,4 +34,9 @@ export class DoctorController {
   ): Promise<UpdateRequestStatusDto> {
     return this.doctorService.rejectRequest(requestId, user);
   }
+  @Auth([RoleType.ADMIN])
+@Get('requests')
+async getMyRequests(@User() user: UserDocument) {
+  return this.doctorService.getMyRequests(user);
+}
 }

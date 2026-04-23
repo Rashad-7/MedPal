@@ -108,5 +108,13 @@ async rejectRequest(
 
   return { status: RequestStatus.REJECTED };
 }
- 
+ async getMyRequests(user: UserDocument) {
+  const requests = await this.reqRepository.find({
+    filter: { receiverId: user._id },
+   populate: [{ path: 'senderId', select: 'fullName email phone' }],
+  });
+
+
+  return { message: 'done', data: requests };
+}
 }

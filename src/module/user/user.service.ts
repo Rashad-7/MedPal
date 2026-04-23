@@ -157,17 +157,12 @@ const patient = await this.patientRepository.findOne({
   filter: { userId: senderId }
 });
 
-  console.log('Patient:', patient);
-  console.log('Patient doctors:', patient?.doctors);
-  console.log('ReceiverID:', receiverId);
-  console.log('ReceiverID type:', typeof receiverId);
-
-if (patient && patient.doctors && patient.doctors.some(doc => doc.toString() === receiverId.toString())) {
+if (patient && patient.doctors && patient.doctors.some(doc => doc=== receiverId)) {
   throw new BadRequestException('This doctor is already in your doctors list');
 }
   return this.reqRepository.create({
     senderId,
-    receiverId,
+    receiverId: new mongoose.Types.ObjectId(receiverId),
     status: RequestStatus.PENDING,
   });
 }
