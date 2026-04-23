@@ -31,11 +31,6 @@ export class Patient {
 
     @Prop({ type: HealthReportSchema })  // ✅ Sub-schema
   healthReport: HealthReport;
-
-
-  @Prop({ type: [String], required: false })
-  medications: string[];
-
   @Prop({ type: String, required: true })
   bloodType: string;
  @Prop({ type: Number, required: false })
@@ -55,7 +50,29 @@ note?:string
 chronicDiseases: ChronicDisease[];
   @Prop({ type: [mongoose.Types.ObjectId], ref: 'User', required: false, default: [] })
   doctors?: mongoose.Types.ObjectId[];
-
+@Prop({
+  type: [
+    {
+      medicineId: { type: mongoose.Types.ObjectId, ref: 'Medicine' },
+      medicineName: { type: String },
+      dosage: { type: String },
+      frequency: { type: String }, 
+      startDate: { type: Date },
+      active: { type: Boolean, default: true },
+    },
+  ],
+  default: [],
+})
+medications: {
+  medicineId: mongoose.Types.ObjectId;
+  medicineName: string;
+  dosage: string;
+  frequency: string;
+  startDate: Date;
+  active: boolean;
+}[];
+@Prop({ type: String })
+fcmToken?: string;
 }
 
 

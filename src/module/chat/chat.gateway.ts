@@ -30,19 +30,28 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {}
 
   async handleConnection(client: Socket) {
-    try {
-      const token = client.handshake.headers.authorization;
-      if (!token) {
-        throw new Error('No authorization token provided');
-      }
-      const user = await this.tokenService.verifyToken({ authorization: token });
-      client.data.user = user;
-      this.connectedUsers.set(user._id.toString(), client.id);
-      console.log(`User ${user._id} connected via socket ${client.id}`);
-    } catch (err) {
+      try {
+    // جيب الـ token من أي مكان ممكن ييجي منه
+    const authHeader =
+      client.handshake.headers.authorization ||
+      client.handshake.auth?.token ||
+      client.handshake.query?.token as string;
+
+
+    if (!authHeader) {
+    
       client.disconnect();
+      return;
     }
+
+    const user = await this.tokenService.verifyToken({ authorization: authHeader });
+    client.data.user = user;
+    this.connectedUsers.set(user._id.toString(), client.id);
+
+  } catch (err) {
+    client.disconnect();
   }
+}
 
   handleDisconnect(client: Socket) {
     const user = client.data.user;
