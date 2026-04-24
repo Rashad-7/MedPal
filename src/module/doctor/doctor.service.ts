@@ -150,18 +150,19 @@ async getPatient(patientUserId: string, user: UserDocument) {
   return { message: 'done', data: patient };
 }
 async getMyPatients(user: UserDocument) {
+  
   const doctor = await this.doctorRepository.findOne({
     filter: { userId: user._id },
-    populate: [
-      {
-        path: 'patients',
-        select: 'fullName email phone',
-      },
-    ],
   });
 
   if (!doctor) throw new NotFoundException('Doctor not found');
+  const patients = await this.patientRepository.find({
+    filter: { userId: { $in: doctor.patients || [] } },
+    populate: [
+      { path: 'userId', select: 'fullName email phone address  DOB gender image' },
+    ],
+  });
 
-  return { message: 'done', total: doctor.patients?.length || 0, data: doctor.patients };
+  return { message: 'done', total: patients.length || 0, data: patients };
 }
 }

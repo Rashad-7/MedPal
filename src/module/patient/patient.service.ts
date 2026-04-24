@@ -11,12 +11,15 @@ import mongoose from 'mongoose';
 import { PatientRepositoryService } from 'src/DB/repository/patient.repository.service';
 import { PatientDocument } from 'src/DB/model/patient.model';
 import { RequestDocument } from 'src/DB/model/Req.model';
+import { DoctorRepositoryService } from 'src/DB/repository/doctor.repository.service';
+import { DoctorDocument } from 'src/DB/model/doctor.model';
 
 @Injectable()
 export class PatientService {
   constructor(
     private readonly patientRepositoryService: PatientRepositoryService<PatientDocument>,
              private readonly reqRepository:ReqRepositoryService<RequestDocument>,
+             private readonly doctorRepositoryService:DoctorRepositoryService<DoctorDocument>
     
   ) {}
   async updateProfile(user: UserDocument, body: UpdateProfileDto) {
@@ -69,16 +72,21 @@ export class PatientService {
 async getMyDoctors(user: UserDocument) {
   const patient = await this.patientRepositoryService.findOne({
     filter: { userId: user._id },
-    populate: [
-      {
-        path: 'doctors',
-        select: 'fullName email phone',
-      },
-    ],
   });
 
   if (!patient) throw new NotFoundException('Patient not found');
 
-  return { message: 'done', total: patient.doctors?.length || 0, data: patient.doctors };
+  const doctors = await this.doctorRepositoryService.find({
+    filter: { userId: { $in: patient.doctors || [] } },
+    populate: [
+      {
+        path: 'userId',
+        select: '-password -confirmEmailOTP -forgetPasswordOtp -changeCredentialTime -isVerified ',
+      },
+    ],
+    select: '-createdAt -updatedAt',
+  });
+
+  return { message: 'done', total: doctors.length, data: doctors };
 }
 }
