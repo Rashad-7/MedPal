@@ -31,7 +31,7 @@ constructor(
   if (!request) {
     throw new NotFoundException('Request not found');
   }
-if (request.receiverId!=user._id) {
+if (request.receiverId.toString() !== user._id.toString()){
   throw new BadRequestException('Only receiver can accept request');
 }
   if (request.status !== RequestStatus.PENDING) {
