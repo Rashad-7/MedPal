@@ -1,8 +1,11 @@
 // src/module/sos/sos.controller.ts
-import { Body, Controller, Get, Param, Patch, Post, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  Body, Controller, Get, Param,
+  Patch, Post, Query, UsePipes, ValidationPipe,
+} from '@nestjs/common';
 import { SOSService } from './sos.service';
 import { Auth } from 'src/common/decorator/auth.decorator';
-import { RoleType,type  UserDocument } from 'src/DB/model/User.model';
+import { RoleType, type UserDocument } from 'src/DB/model/User.model';
 import { User } from 'src/common/decorator/user.decorator';
 import { CreateSOSDto } from './dto/sos.dto';
 
@@ -21,11 +24,21 @@ export class SOSController {
     return this.sosService.createSOS(user, body);
   }
 
-  // الدكتور يشوف الـ SOS بتوعه
+  // الدكتور يشوف الـ SOS — فلتر اختياري ?isResolved=true/false
   @Auth([RoleType.ADMIN])
   @Get()
-  async getDoctorSOS(@User() user: UserDocument) {
-    return this.sosService.getDoctorSOS(user);
+  async getDoctorSOS(
+    @User() user: UserDocument,
+    @Query('isResolved') isResolved?: string,
+  ) {
+    return this.sosService.getDoctorSOS(user, isResolved);
+  }
+
+  // المريض يشوف الـ SOS بتوعه
+  @Auth([RoleType.USER])
+  @Get('my')
+  async getPatientSOS(@User() user: UserDocument) {
+    return this.sosService.getPatientSOS(user);
   }
 
   // الدكتور يعمل resolve
