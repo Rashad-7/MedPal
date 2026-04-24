@@ -116,10 +116,10 @@ await this.reqRepository.deleteOne({
  async getMyRequests(user: UserDocument) {
   const requests = await this.reqRepository.find({
     filter: { receiverId: user._id },
-   populate: [{ path: 'senderId', select: 'fullName email phone' }],
+  populate: [
+  { path: 'senderId', select: '_id fullName email phone' }
+]
   });
-
-
   return { message: 'done', data: requests };
 }
 async getPatient(patientUserId: string, user: UserDocument) {
