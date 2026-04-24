@@ -39,4 +39,12 @@ export class DoctorController {
 async getMyRequests(@User() user: UserDocument) {
   return this.doctorService.getMyRequests(user);
 }
+@Auth([RoleType.ADMIN])
+@Get('patient/:patientUserId')
+async getPatient(
+  @Param('patientUserId') patientUserId: string,
+  @User() user: UserDocument,
+) {
+  return this.doctorService.getPatient(patientUserId, user);
+}
 }

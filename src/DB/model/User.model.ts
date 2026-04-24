@@ -58,6 +58,8 @@ export class User {
   confirmEmailOTP: string;
   @Prop({ type: String })
   forgetPasswordOtp: string;
+  @Prop({ type: String })
+fcmToken?: string;
 }
 export type UserDocument = HydratedDocument<User>;
 export const UserSchema = SchemaFactory.createForClass(User);

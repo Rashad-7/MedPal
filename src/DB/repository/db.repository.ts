@@ -1,4 +1,4 @@
-import { FilterQuery, Model, PopulateOptions, UpdateWriteOpResult } from "mongoose";
+import { DeleteResult, FilterQuery, Model, PopulateOptions, UpdateWriteOpResult } from "mongoose";
 import mongoose from 'mongoose';
 export abstract class DataBaseRepository<TDocument> {
     protected constructor(protected readonly model:Model<TDocument>) {}
@@ -55,8 +55,11 @@ async findById({
 
   return document;
 }
-// const deleteOne = async ({ model, filter = {} } = {}) => {
-//     const document = await model.deleteOne(filter);
-//     return document;
-// }
+async deleteOne({
+  filter,
+}: {
+  filter: FilterQuery<TDocument>;
+}): Promise<DeleteResult> {
+  return await this.model.deleteOne(filter);
+}
 }

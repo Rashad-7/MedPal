@@ -71,8 +71,7 @@ medications: {
   startDate: Date;
   active: boolean;
 }[];
-@Prop({ type: String })
-fcmToken?: string;
+
 }
 
 

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { DoctorDocument } from 'src/DB/model/doctor.model';
 import { UserDocument } from 'src/DB/model/User.model';
 import { DoctorRepositoryService } from 'src/DB/repository/doctor.repository.service';
@@ -79,6 +79,9 @@ const patientId = patinet!.userId;
 //   filter: { _id: doctorId },
 //   data: { $addToSet: { patients: patientId } }
 // });
+await this.reqRepository.deleteOne({
+  filter: { _id: new mongoose.Types.ObjectId(requestId) }
+});
   return { status: RequestStatus.ACCEPTED };
 }
  
@@ -105,7 +108,9 @@ async rejectRequest(
     filter: { _id: new Types.ObjectId(requestId) },
     data: { status: RequestStatus.REJECTED }
   });
-
+await this.reqRepository.deleteOne({
+  filter: { _id: new Types.ObjectId(requestId) }
+});
   return { status: RequestStatus.REJECTED };
 }
  async getMyRequests(user: UserDocument) {
@@ -116,5 +121,32 @@ async rejectRequest(
 
 
   return { message: 'done', data: requests };
+}
+async getPatient(patientUserId: string, user: UserDocument) {
+  // تأكد إن المريض ده فعلاً في قائمة الدكتور
+  const doctor = await this.doctorRepository.findOne({
+    filter: { userId: user._id },
+  });
+
+  if (!doctor) throw new NotFoundException('Doctor not found');
+
+  const isMyPatient = doctor.patients?.some(
+    (p) => p.toString() === patientUserId,
+  );
+
+  // if (!isMyPatient) throw new ForbiddenException('This patient is not under your care');
+  const patient = await this.patientRepository.findOne({
+    filter: { userId: new mongoose.Types.ObjectId(patientUserId) },
+    populate: [
+      {
+        path: 'userId',
+        select: 'fullName email phone address DOB gender image',
+      },
+    ],
+  });
+
+  if (!patient) throw new NotFoundException('Patient not found');
+
+  return { message: 'done', data: patient };
 }
 }
