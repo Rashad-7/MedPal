@@ -14,6 +14,7 @@ import { PatientModule } from './module/patient/patient.module';
 import { DoctorModule } from './module/doctor/doctor.module';
 import { ChatModule } from './module/chat/chat.module';
 import { MedicationModule } from './module/medication/medication.module';
+import { SOSModule } from './module/sos/sos.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ envFilePath:resolve("./config/.env.dev"),isGlobal: true }),
@@ -24,7 +25,8 @@ import { MedicationModule } from './module/medication/medication.module';
      PatientModule,
      DoctorModule,
      ChatModule,
-     MedicationModule
+     MedicationModule,
+     SOSModule
   ],
   controllers: [AppController],
   providers: [AppService],

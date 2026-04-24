@@ -29,5 +29,9 @@ export class PatientController {
   async getMyProfile(@User() user: UserDocument) {
     return this.patientService.getMyProfile(user);
   }
-
+@Auth([RoleType.USER])
+@Get('doctors')
+async getMyDoctors(@User() user: UserDocument) {
+  return this.patientService.getMyDoctors(user);
+}
 }

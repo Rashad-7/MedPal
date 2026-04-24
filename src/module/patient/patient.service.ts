@@ -66,5 +66,19 @@ export class PatientService {
 
     return { message: 'done', data: patient };
   }
+async getMyDoctors(user: UserDocument) {
+  const patient = await this.patientRepositoryService.findOne({
+    filter: { userId: user._id },
+    populate: [
+      {
+        path: 'doctors',
+        select: 'fullName email phone',
+      },
+    ],
+  });
 
+  if (!patient) throw new NotFoundException('Patient not found');
+
+  return { message: 'done', total: patient.doctors?.length || 0, data: patient.doctors };
+}
 }

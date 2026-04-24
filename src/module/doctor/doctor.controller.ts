@@ -47,4 +47,9 @@ async getPatient(
 ) {
   return this.doctorService.getPatient(patientUserId, user);
 }
+@Auth([RoleType.ADMIN])
+@Get('patients')
+async getMyPatients(@User() user: UserDocument) {
+  return this.doctorService.getMyPatients(user);
+}
 }
