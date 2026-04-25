@@ -14,8 +14,13 @@ import { TokenService } from 'src/common/service/token.service';
 import mongoose from 'mongoose';
 
 @WebSocketGateway({
-  cors: { origin: '*' },
-  namespace: '/chat',
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+    credentials: false,
+  },
+  namespace: '/chat', 
+  transports: ['polling', 'websocket'], 
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
