@@ -1,14 +1,7 @@
 // src/module/medication/medication.controller.ts
 import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  UploadedFile,
-  UseInterceptors,
-  UsePipes,
-  ValidationPipe,
+  Body, Controller, Get, Param, Post,
+  UploadedFile, UseInterceptors, UsePipes, ValidationPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MedicationService } from './medication.service';
@@ -22,9 +15,9 @@ import { cloudMulterOptions } from 'src/common/multer/cloud.multer.options';
 export class MedicationController {
   constructor(private readonly medicationService: MedicationService) {}
 
-  // ============ إضافة دوا بالاسم أو الصورة ============
+  // إضافة دوا يدوي
   @Auth([RoleType.USER])
-  @Post('add')
+  @Post('add')  
   @UseInterceptors(FileInterceptor('image', cloudMulterOptions({})))
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   async addMedication(
@@ -35,7 +28,7 @@ export class MedicationController {
     return this.medicationService.addMedication(user, body, file);
   }
 
-  // ============ تسجيل إن المريض اخد الدوا ============
+  // تسجيل أخد الدوا
   @Auth([RoleType.USER])
   @Post('take/:logId')
   async takeMedication(
@@ -45,17 +38,39 @@ export class MedicationController {
     return this.medicationService.takeMedication(user, logId);
   }
 
-  // ============ تقرير الأدوية ============
+  // جيب أدوية المريض مع التفاصيل الكاملة
+  @Auth([RoleType.USER])
+  @Get('my')
+  async getMyMedications(@User() user: UserDocument) {
+    return this.medicationService.getPatientMedications(user);
+  }
+
+  // تقرير الأدوية الكامل
   @Auth([RoleType.USER])
   @Get('report')
   async getMedicationReport(@User() user: UserDocument) {
     return this.medicationService.getMedicationReport(user);
   }
 
-  // ============ بيانات الأدوية للـ AI ============
-  @Auth([RoleType.USER])
-  @Get('context')
-  async getMedicinesContext(@User() user: UserDocument) {
-    return this.medicationService.getPatientMedicinesContext(user._id);
+  // كل الأدوية في الـ DB
+  @Auth([RoleType.USER, RoleType.ADMIN])
+  @Get()
+  async getAllMedicines() {
+    return this.medicationService.getAllMedicines();
   }
+
+
+  @Auth([RoleType.USER])
+@Get('pending')
+async getPendingLogs(@User() user: UserDocument) {
+  return this.medicationService.getPendingLogs(user);
+}
+  // دوا معين بالـ ID
+  @Auth([RoleType.USER, RoleType.ADMIN])
+  @Get(':medicineId')
+  async getMedicine(@Param('medicineId') medicineId: string) {
+    return this.medicationService.getMedicine(medicineId);
+    
+  }
+
 }

@@ -1,25 +1,62 @@
-// src/module/medication/dto/medication.dto.ts
-import { IsString, IsOptional, IsDateString, IsMongoId } from 'class-validator';
-import mongoose from 'mongoose';
+import {
+  IsString, IsNotEmpty, IsEnum, IsOptional,
+  IsNumber, IsArray, IsDateString, Min,
+} from 'class-validator';
+import { RepeatType, WarningLevel } from 'src/DB/model/Medication.model';
+import { Type } from 'class-transformer';
 
 export class AddMedicationDto {
+  @IsString()
+  @IsNotEmpty()
+  medicationName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  dosage: string; // "500mg"
+
+  @IsEnum(RepeatType)
+  repeat: RepeatType; // daily | weekly | monthly | every_x_hours
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Type(() => Number)
+  repeatEveryHours?: number; 
+
+  @IsString()
+  @IsNotEmpty()
+  reminderTime: string; // "08:00"
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  sideEffects?: string[];
+
+  @IsEnum(WarningLevel)
+  warningLevel: WarningLevel;
+
   @IsOptional()
   @IsString()
-  medicineName?: string; // لو بعت اسم
+  activeIngredient?: string;
 
-  // لو بعت صورة هتيجي كـ file
-
+  @IsOptional()
   @IsString()
-  dosage: string; // مثلاً "500mg"
+  category?: string;
 
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  contraindications?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  interactions?: string[];
+
+  @IsOptional()
   @IsString()
-  frequency: string; // مثلاً "8" يعني كل 8 ساعات
+  instructions?: string;
 
   @IsDateString()
-  startDate: string; // امتى يبدأ ياخد الدوا
-}
-
-export class TakeMedicationDto {
-  @IsMongoId()
-  logId: mongoose.Types.ObjectId; // الـ MedicationLog ID
+  startDate: string;
 }

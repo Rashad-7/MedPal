@@ -2,51 +2,59 @@
 import { MongooseModule, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
+export enum WarningLevel {
+  SAFE = 'safe',
+  MILD = 'mild',
+  MODERATE = 'moderate',
+  SEVERE = 'severe',
+}
+
+export enum RepeatType {
+  DAILY = 'daily',
+  WEEKLY = 'weekly',
+  MONTHLY = 'monthly',
+  EVERY_X_HOURS = 'every_x_hours',
+}
+
 @Schema({ timestamps: true })
 export class Medicine {
-  @Prop({ type: String, required: true, trim: true })
-  tradName: string; // الاسم التجاري
+  @Prop({ type: String, required: true, trim: true, unique: true })
+  medicationName: string;
 
   @Prop({ type: String, required: true })
-  activeIngredient: string; // المادة الفعالة
+  dosage: string; // مثلاً "500mg"
 
-  @Prop({ type: String })
-  genericName?: string; // الاسم العلمي
+  @Prop({ type: String, enum: RepeatType, required: true })
+  repeat: RepeatType; // daily | weekly | monthly | every_x_hours
 
-  @Prop({ type: String })
-  dosage?: string; // الجرعة المعتادة
+  @Prop({ type: Number, required: false })
+  repeatEveryHours?: number; 
 
-  @Prop({ type: String })
-  frequency?: string; // تكرار الاستخدام
+  @Prop({ type: String, required: true })
+  reminderTime: string;
 
-  @Prop({ type: String })
-  strength?: string; // التركيز مثلاً 500mg
-
-  @Prop({ type: String })
-  description?: string; // وصف عام
-
-  @Prop({ type: String })
-  instructions?: string; // تعليمات الاستخدام
-
-  @Prop({ type: String })
-  manufacturer?: string; // الشركة المصنعة
-
-  // ⭐ مهم للـ AI
   @Prop({ type: [String], default: [] })
-  sideEffects: string[]; // الأعراض الجانبية
+  sideEffects: string[];
 
-  // ⭐ مهم للـ AI
-  @Prop({ type: [String], default: [] })
-  contraindications: string[]; // موانع الاستخدام
+  @Prop({ type: String, enum: WarningLevel, default: WarningLevel.SAFE })
+  warningLevel: WarningLevel;
 
-  // ⭐ مهم للـ AI
-  @Prop({ type: [String], default: [] })
-  interactions: string[]; // تفاعلات مع أدوية أخرى
+  // بيانات إضافية للـ AI والتقرير
+  @Prop({ type: String })
+  activeIngredient?: string;
 
   @Prop({ type: String })
-  category?: string; // تصنيف الدوا (مسكن، مضاد حيوي...)
+  category?: string;
 
-  // صورة الدوا لو اتحفظت
+  @Prop({ type: [String], default: [] })
+  contraindications: string[];
+
+  @Prop({ type: [String], default: [] })
+  interactions: string[];
+
+  @Prop({ type: String })
+  instructions?: string;
+
   @Prop({ type: { secure_url: String, public_id: String }, required: false })
   image?: { secure_url: string; public_id: string };
 }

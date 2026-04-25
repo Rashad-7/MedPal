@@ -23,13 +23,12 @@ export class MedicationLog {
   status: MedicationStatus;
 
   @Prop({ type: Number, default: 0 })
-  attemptCount: number; // كام مرة رن الريمايندر
-
+  attemptCount: number; 
   @Prop({ type: Date, required: true })
-  scheduledTime: Date; // امتى المفروض ياخد الدوا
+  scheduledTime: Date; 
 
   @Prop({ type: Date })
-  takenAt?: Date; // امتى اخده فعلاً
+  takenAt?: Date; 
 }
 
 export type MedicationLogDocument = HydratedDocument<MedicationLog>;

@@ -54,9 +54,13 @@ chronicDiseases: ChronicDisease[];
   type: [
     {
       medicineId: { type: mongoose.Types.ObjectId, ref: 'Medicine' },
-      medicineName: { type: String },
+      medicationName: { type: String },
       dosage: { type: String },
-      frequency: { type: String }, 
+      repeat: { type: String },
+      repeatEveryHours: { type: Number },
+      reminderTime: { type: String },
+      sideEffects: { type: [String], default: [] },
+      warningLevel: { type: String },
       startDate: { type: Date },
       active: { type: Boolean, default: true },
     },
@@ -65,9 +69,13 @@ chronicDiseases: ChronicDisease[];
 })
 medications: {
   medicineId: mongoose.Types.ObjectId;
-  medicineName: string;
+  medicationName: string;
   dosage: string;
-  frequency: string;
+  repeat: string;
+  repeatEveryHours?: number;
+  reminderTime: string;
+  sideEffects: string[];
+  warningLevel: string;
   startDate: Date;
   active: boolean;
 }[];
