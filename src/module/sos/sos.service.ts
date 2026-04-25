@@ -34,7 +34,7 @@ export class SOSService {
 
     const sos = await this.sosRepository.create({
       patientId: user._id,
-      doctorId,
+      doctorId:new mongoose.Types.ObjectId(doctorId),
       updateType,
       severity,
       details,
