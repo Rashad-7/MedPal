@@ -130,7 +130,7 @@ export class loginDto {
 
   @IsString()
   @MinLength(6)
-  @IsStrongPassword()
+  // @IsStrongPassword()
   password: string;
 }
 export class confirmEmailDto {
