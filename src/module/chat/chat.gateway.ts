@@ -37,7 +37,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const user = await this.tokenService.verifyToken({ authorization: authHeader });
       client.data.user = user;
       this.connectedUsers.set(user._id.toString(), client.id);
-      console.log(`✅ ${user._id} connected`);
     } catch {
       client.disconnect();
     }

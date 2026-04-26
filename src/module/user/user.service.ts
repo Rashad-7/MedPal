@@ -156,14 +156,28 @@ async sendRequest(senderId: mongoose.Types.ObjectId,param:SendRequestDto) {
 const patient = await this.patientRepository.findOne({
   filter: { userId: senderId }
 });
-
-if (patient && patient.doctors && patient.doctors.some(doc => doc=== receiverId)) {
+if (
+  patient &&
+  patient.doctors &&
+  patient.doctors.some(doc => doc.toString() === receiverId.toString())
+) {
   throw new BadRequestException('This doctor is already in your doctors list');
 }
   return this.reqRepository.create({
-    senderId,
+    senderId: new mongoose.Types.ObjectId(senderId),
     receiverId: new mongoose.Types.ObjectId(receiverId),
     status: RequestStatus.PENDING,
   });
+
 }
+// async getMyStatusRequests(user: UserDocument) {
+//   const requests = await this.reqRepository.find({
+//     filter: { senderId: user._id },
+//     populate: [
+//       { path: 'receiverId ', select: 'fullName email' },
+//     ],
+//   }); 
+//   return { message: 'done', total: requests.length, data: requests };
+// }
+
 }

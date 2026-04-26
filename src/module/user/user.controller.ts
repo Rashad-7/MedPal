@@ -58,5 +58,9 @@ return this.userService.getDoctors(query)
 async sendReq(@Param() param:SendRequestDto,@User("_id")senderId:mongoose.Types.ObjectId){
 return this.userService.sendRequest(senderId,param)
 }
-
+// @Auth([RoleType.USER])
+// @Get("myRequests")
+// async getMyRequests(@User() user: UserDocument) {
+//   return this.userService.getMyStatusRequests(user);
+// }
 }
