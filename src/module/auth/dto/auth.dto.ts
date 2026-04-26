@@ -216,8 +216,8 @@ export class SignupDocDto {
   address?: string;
   @IsString()
   @IsNotEmpty()
-  @MinLength(10)
-  @MaxLength(20)
+  @MinLength(4)
+  @MaxLength(50)
   specialization: string;
 
   @IsString()
