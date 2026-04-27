@@ -116,7 +116,7 @@ const doctor = await this.doctorRepositoryService.create({
   async restPassword(body: RestPasswordDto): Promise<{ message: string }> {
     const { email, otp, password, confirmPassword } = body;
     const user = await this.UserRepositoryService.findOne({
-      filter: { email, confirmEmail: { $exists: true } },
+      filter: { email },
     });
     if (!user) {
       throw new NotFoundException('user not found');
