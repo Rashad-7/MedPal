@@ -96,7 +96,7 @@ const doctor = await this.doctorRepositoryService.create({
   ): Promise<{ message: string; otp: number }> {
     const { email } = body;
     const user = await this.UserRepositoryService.findOne({
-      filter: { email, confirmEmail: { $exists: true } },
+      filter: { email },
     });
     if (!user) {
       throw new NotFoundException('user not found');
