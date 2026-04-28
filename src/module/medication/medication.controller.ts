@@ -82,5 +82,15 @@ async scanMedicine(
   @User() user: UserDocument,
 ) {
   return this.medicationService.scanAndSave(user, file);
+  
 }
+// فحص تفاعل دوا مع أدوية المريض الحالية
+@Auth([RoleType.USER])
+@Get('check-interaction/:medicineName')
+async checkInteraction(
+  @Param('medicineName') medicineName: string,
+  @User() user: UserDocument,
+) {
+  return this.medicationService.checkInteraction(user, medicineName);
+} 
 }

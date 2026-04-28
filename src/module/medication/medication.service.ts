@@ -31,98 +31,138 @@ export class MedicationService {
 
   ) {}
 
-  async addMedication(
-    user: UserDocument,
-    body: AddMedicationDto,
-    file?: Express.Multer.File,
+async addMedication(user: UserDocument, body: AddMedicationDto, file?: Express.Multer.File) {
+  const { repeat, repeatEveryHours, reminderTime, startDate } = body;
+
+  // 1. جيب بيانات الدوا من Gemini
+  const aiData = await this.aiMedicineService.getMedicineData(body.medicationName, file);
+
+  // 2. جيب أدوية المريض الحالية للفحص
+  const patient = await this.patientRepository.findOne({ filter: { userId: user._id } });
+  if (!patient) throw new NotFoundException('Patient profile not found');
+
+  const currentMedNames = patient.medications
+    ?.filter((m) => m.active)
+    .map((m) => m.medicationName) || [];
+
+  // 3. فحص التفاعلات مع الأدوية الحالية
+  const interactionResult = await this.aiMedicineService.checkDrugInteractions(
+    aiData.medicationName,
+    currentMedNames,
+  );
+
+  // 4. فحص التوافق مع الأمراض المزمنة
+  const compatibilityResult = await this.aiMedicineService.checkChronicDiseaseCompatibility(
+    aiData.medicationName,
+    patient.chronicDiseases?.map((d) => ({
+      name: d.name,
+      status: d.status,
+      medications: d.medications,
+    })) || [],
+  );
+// 5 if the drug has severe interactions or is not compatible, return a warning without adding the medication
+  if (
+    interactionResult.severity === 'severe' ||
+    compatibilityResult.warningLevel === 'avoid'
   ) {
-    const {
-      medicationName, dosage, repeat, repeatEveryHours,
-      reminderTime, sideEffects, warningLevel,
-      activeIngredient, category, contraindications,
-      interactions, instructions, startDate,
-    } = body;
+    return {
+      message: 'warning',
+      added: false,
+      interactionCheck: interactionResult,
+      compatibilityCheck: compatibilityResult,
+      warning: 'this medication has severe interactions with your current medications or is not compatible with your chronic diseases. Please consult your doctor before adding it.',
+    };
+  }
 
-    let imageData;
-    if (file) {
-      const uploaded = await this.cloudService.uploadFile(file, {
-        folder: `${process.env.APP_NAME}/medicines`,
-      });
-      imageData = { secure_url: uploaded.secure_url, public_id: uploaded.public_id };
-    }
-
-    let medicine = await this.medicineModel.findOne({
-      medicationName: { $regex: `^${medicationName}$`, $options: 'i' },
+// upload image if provided
+  let imageData;
+  if (file) {
+    const uploaded = await this.cloudService.uploadFile(file, {
+      folder: `${process.env.APP_NAME}/medicines`,
     });
+    imageData = { secure_url: uploaded.secure_url, public_id: uploaded.public_id };
+  }
 
-    if (!medicine) {
-      medicine = await this.medicineModel.create({
-        medicationName,
-        dosage,
-        repeat,
-        repeatEveryHours,
-        reminderTime,
-        sideEffects: sideEffects || [],
-        warningLevel,
-        activeIngredient,
-        category,
-        contraindications: contraindications || [],
-        interactions: interactions || [],
-        instructions,
-        ...(imageData && { image: imageData }),
-      });
-    }
+  // 7. save medicine if not exists, then add to patient's medications
+  let medicine = await this.medicineModel.findOne({
+    medicationName: { $regex: `^${aiData.medicationName}$`, $options: 'i' },
+  });
 
-    const patient = await this.patientRepository.findOne({ filter: { userId: user._id } });
-    if (!patient) throw new NotFoundException('Patient profile not found');
-
-    const alreadyAdded = patient.medications?.some(
-      (m) => m.medicineId?.toString() === medicine._id.toString(),
-    );
-    if (alreadyAdded) throw new BadRequestException("You've already added this medicine");
-    await this.patientRepository.updateOne({
-      filter: { userId: user._id },
-      data: {
-        $push: {
-          medications: {
-            medicineId: medicine._id,
-            medicationName: medicine.medicationName,
-            dosage,
-            repeat,
-            repeatEveryHours,
-            reminderTime,
-            sideEffects: sideEffects || [],
-            warningLevel,
-            startDate: new Date(startDate),
-            active: true,
-          },
-        },
-      },
-    });
-
-    const scheduledTime = this.getFirstDoseTime(startDate, reminderTime);
-    const log = await this.logModel.create({
-      patientId: user._id,
-      medicineId: medicine._id,
-      medicineName: medicine.medicationName,
-      status: MedicationStatus.PENDING,
-      attemptCount: 0,
-      scheduledTime,
-    });
-
-    this.scheduleReminder({
-      logId: log._id.toString(),
-      patientId: user._id.toString(),
-      scheduledTime,
-      medicineName: medicine.medicationName,
+  if (!medicine) {
+    medicine = await this.medicineModel.create({
+      medicationName: aiData.medicationName,
+      dosage: body.dosage || aiData.dosage || 'N/A',
       repeat,
       repeatEveryHours,
       reminderTime,
+      sideEffects: aiData.sideEffects,
+      warningLevel: aiData.warningLevel || 'safe',
+      activeIngredient: aiData.activeIngredient,
+      genericName: aiData.genericName,
+      category: aiData.category,
+      contraindications: aiData.contraindications,
+      interactions: aiData.interactions,
+      instructions: aiData.instructions,
+      ...(imageData && { image: imageData }),
     });
-
-    return { message: 'Done', medicine, scheduledTime, logId: log._id };
   }
 
+  const alreadyAdded = patient.medications?.some(
+    (m) => m.medicineId?.toString() === medicine._id.toString(),
+  );
+  if (alreadyAdded) throw new BadRequestException("You've already added this medicine");
+
+  await this.patientRepository.updateOne({
+    filter: { userId: user._id },
+    data: {
+      $push: {
+        medications: {
+          medicineId: medicine._id,
+          medicationName: medicine.medicationName,
+          dosage: body.dosage || aiData.dosage || 'N/A',
+          repeat,
+          repeatEveryHours,
+          reminderTime,
+          sideEffects: aiData.sideEffects,
+          warningLevel: aiData.warningLevel || 'safe',
+          startDate: new Date(startDate),
+          active: true,
+        },
+      },
+    },
+  });
+
+  const scheduledTime = this.getFirstDoseTime(startDate, reminderTime);
+  const log = await this.logModel.create({
+    patientId: user._id,
+    medicineId: medicine._id,
+    medicineName: medicine.medicationName,
+    status: MedicationStatus.PENDING,
+    attemptCount: 0,
+    scheduledTime,
+  });
+
+  this.scheduleReminder({
+    logId: log._id.toString(),
+    patientId: user._id.toString(),
+    scheduledTime,
+    medicineName: medicine.medicationName,
+    repeat,
+    repeatEveryHours,
+    reminderTime,
+  });
+
+  return {
+    message: 'Done',
+    added: true,
+    medicine,
+    scheduledTime,
+    logId: log._id,
+// adding interaction and compatibility results for user awareness, even if they are not severe
+    interactionCheck: interactionResult,
+    compatibilityCheck: compatibilityResult,
+  };
+}
   // ============ Get All Medicines ============
   async getAllMedicines() {
     const medicines = await this.medicineModel.find().lean();
@@ -345,7 +385,7 @@ export class MedicationService {
       });
 
     } else {
-      // retry بعد 15 دقيقة
+      // retry - schedule next reminder in 15 minutes
       try { this.schedulerRegistry.deleteCronJob(`reminder_${logId}_${attempt}`); } catch {}
 
       const retryTime = new Date(Date.now() + 15 * 60 * 1000);
@@ -414,22 +454,19 @@ export class MedicationService {
 }
 async scanAndSave(user: UserDocument, file: Express.Multer.File) {
   if (!file) throw new BadRequestException('Image is required');
-
-  // الخطوة ١: جيب اسم الدوا من الصورة
+// get medicine name from image using AI model
   const medicineName = await this.aiMedicineService.getMedicineNameFromImage(file);
   console.log('Detected medicine name:', medicineName);
 
-  // الخطوة ٢: جيب التفاصيل من FDA
   const medicineDetails = await this.aiMedicineService.getMedicineData(medicineName);
 
-  // الخطوة ٣: لو الدوا موجود في الـ DB ارجعه، لو لأ احفظه
   let medicine = await this.medicineModel.findOne({
     medicationName: { $regex: `^${medicineName}$`, $options: 'i' },
   });
 
   if (!medicine) {
     medicine = await this.medicineModel.create({
-      medicationName: medicineDetails.tradName || medicineName,
+     medicationName: medicineDetails.medicationName || medicineName,
       dosage: medicineDetails.dosage || 'Not specified',
       repeat: RepeatType.DAILY,           // default — المريض يعدله بعدين
       reminderTime: '08:00',              // default
@@ -447,6 +484,26 @@ async scanAndSave(user: UserDocument, file: Express.Multer.File) {
     message: 'Done',
     detectedName: medicineName,
     medicine,
+  };
+}
+async checkInteraction(user: UserDocument, medicineName: string) {
+  const patient = await this.patientRepository.findOne({ filter: { userId: user._id } });
+  if (!patient) throw new NotFoundException('Patient not found');
+
+  const currentMeds = patient.medications
+    ?.filter((m) => m.active)
+    .map((m) => m.medicationName) || [];
+
+  const result = await this.aiMedicineService.checkDrugInteractions(
+    medicineName,
+    currentMeds,
+  );
+
+  return {
+    message: 'done',
+    checkedDrug: medicineName,
+    currentMedications: currentMeds,
+    result,
   };
 }
 }
