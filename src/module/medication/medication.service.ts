@@ -13,6 +13,7 @@ import { UserRepositoryService } from 'src/DB/repository/user.repository.service
 import { NotificationService } from 'src/common/service/notification.service';
 import { AddMedicationDto } from './dto/medication.dto';
 import { CloudService } from 'src/common/multer/cloud.service';
+import { AIMedicineService } from 'src/common/service/aiMedicine.service';
 
 @Injectable()
 export class MedicationService {
@@ -26,6 +27,8 @@ export class MedicationService {
     private readonly notificationService: NotificationService,
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly cloudService: CloudService,
+    private readonly aiMedicineService: AIMedicineService,
+
   ) {}
 
   async addMedication(
@@ -408,5 +411,42 @@ export class MedicationService {
     .lean();
 
   return { message: 'done', total: logs.length, data: logs };
+}
+async scanAndSave(user: UserDocument, file: Express.Multer.File) {
+  if (!file) throw new BadRequestException('Image is required');
+
+  // الخطوة ١: جيب اسم الدوا من الصورة
+  const medicineName = await this.aiMedicineService.getMedicineNameFromImage(file);
+  console.log('Detected medicine name:', medicineName);
+
+  // الخطوة ٢: جيب التفاصيل من FDA
+  const medicineDetails = await this.aiMedicineService.getMedicineData(medicineName);
+
+  // الخطوة ٣: لو الدوا موجود في الـ DB ارجعه، لو لأ احفظه
+  let medicine = await this.medicineModel.findOne({
+    medicationName: { $regex: `^${medicineName}$`, $options: 'i' },
+  });
+
+  if (!medicine) {
+    medicine = await this.medicineModel.create({
+      medicationName: medicineDetails.tradName || medicineName,
+      dosage: medicineDetails.dosage || 'Not specified',
+      repeat: RepeatType.DAILY,           // default — المريض يعدله بعدين
+      reminderTime: '08:00',              // default
+      sideEffects: medicineDetails.sideEffects || [],
+      warningLevel: 'safe',               // default
+      activeIngredient: medicineDetails.activeIngredient || '',
+      category: medicineDetails.category || '',
+      contraindications: medicineDetails.contraindications || [],
+      interactions: medicineDetails.interactions || [],
+      instructions: medicineDetails.instructions || '',
+    });
+  }
+
+  return {
+    message: 'Done',
+    detectedName: medicineName,
+    medicine,
+  };
 }
 }

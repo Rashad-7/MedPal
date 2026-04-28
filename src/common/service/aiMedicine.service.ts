@@ -1,6 +1,5 @@
 // src/common/service/aiMedicine.service.ts
-import { Injectable, BadRequestException } from '@nestjs/common';
-import { CloudService } from '../multer/cloud.service';
+import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 
 export interface MedicineAIResult {
   tradName: string;
@@ -19,60 +18,93 @@ export interface MedicineAIResult {
 
 @Injectable()
 export class AIMedicineService {
-  constructor(private readonly cloudService: CloudService) {}
 
-  async getMedicineData(
-    name?: string,
-    file?: Express.Multer.File,
-  ): Promise<MedicineAIResult> {
-    if (!name && !file) {
-      throw new BadRequestException('يجب إرسال اسم الدوا أو صورته');
+  // ── الخطوة ١: ابعت الصورة وجيب اسم الدوا ──
+  async getMedicineNameFromImage(file: Express.Multer.File): Promise<string> {
+    if (!file) throw new BadRequestException('Image is required');
+
+    try {
+      const FormData = require('form-data');
+      const axios = require('axios');
+      const fs = require('fs');
+
+   const form = new FormData();
+
+form.append('file', file.buffer, {
+  filename: file.originalname,
+  contentType: file.mimetype,
+});
+
+      const response = await axios.post(
+        'https://backspace-anthology-spookily.ngrok-free.dev/predict',
+        form,
+        {
+          headers: {
+            ...form.getHeaders(),
+            'ngrok-skip-browser-warning': 'true', // مهم جداً مع ngrok
+          },
+          timeout: 60000,
+        },
+      );
+
+      console.log('AI raw response:', response.data?.drug);
+
+      const name =
+        response.data?.drug_name ||
+        response.data?.medicine_name ||
+        response.data?.name ||
+        response.data?.result ||
+        response.data?.prediction;
+
+      if (!name) {
+        throw new BadRequestException('Could not detect medicine name from image');
+      }
+
+      return name as string;
+    } catch (err) {
+      if (err instanceof BadRequestException) throw err;
+      // console.error('AI endpoint error:', err?.response?.data || err.message);
+      throw new InternalServerErrorException('AI service failed: ' + err.message);
     }
-
-    // ============================================
-    // TODO: لما الموديل يتحمل على هوست، استبدل
-    // الـ mock ده بـ API call زي كده:
-    //
-    // const formData = new FormData();
-    // if (name) formData.append('medicine_name', name);
-    // if (file) formData.append('image', file.buffer, file.originalname);
-    //
-    // const response = await fetch(process.env.AI_MODEL_URL, {
-    //   method: 'POST',
-    //   body: formData,
-    // });
-    // return await response.json();
-    // ============================================
-
-    // Placeholder حتى الموديل يتحمل
-    return this.mockMedicineData(name || 'Unknown Medicine');
   }
 
-  // ده هيتشال لما الموديل يتحمل
-  private mockMedicineData(name: string): MedicineAIResult {
-    return {
-      tradName: name,
-      activeIngredient: 'يجب ربط الموديل',
-      genericName: 'يجب ربط الموديل',
-      dosage: 'يجب ربط الموديل',
-      frequency: 'يجب ربط الموديل',
-      strength: 'يجب ربط الموديل',
-      description: 'يجب ربط الموديل',
-      instructions: 'يجب ربط الموديل',
-      sideEffects: ['يجب ربط الموديل'],
-      contraindications: ['يجب ربط الموديل'],
-      interactions: ['يجب ربط الموديل'],
-      category: 'يجب ربط الموديل',
-    };
-  }
+  // ── الخطوة ٢: جيب تفاصيل الدوا بالاسم ──
+  async getMedicineData(name: string): Promise<Partial<MedicineAIResult>> {
+    try {
+      const axios = require('axios');
 
-  // ============================================
-  // لما الموديل يتحمل، فضل الـ method دي جاهزة
-  // ============================================
-  async getMedicineFromImage(file: Express.Multer.File): Promise<string> {
-    // الموديل يرجع اسم الدوا من الصورة
-    // const response = await fetch(`${process.env.AI_MODEL_URL}/identify`, ...);
-    // return response.json().medicine_name;
-    return 'Unknown';
+      // بنستخدم FDA Open API مجاناً — مش محتاج API key
+      const response = await axios.get('https://api.fda.gov/drug/label.json', {
+        params: {
+          search: `openfda.brand_name:"${name}"`,
+          limit: 1,
+        },
+        timeout: 10000 ,
+      });
+
+      const result = response.data?.results?.[0];
+      if (!result) return { tradName: name }; // لو مش لاقيه، رجّع الاسم بس
+
+      return {
+        tradName: result.openfda?.brand_name?.[0] || name,
+        activeIngredient: result.active_ingredient?.[0]?.substring(0, 200) || '',
+        genericName: result.openfda?.generic_name?.[0] || '',
+        description: result.description?.[0]?.substring(0, 500) || '',
+        sideEffects: result.adverse_reactions
+          ? [result.adverse_reactions[0]?.substring(0, 300)]
+          : [],
+        contraindications: result.contraindications
+          ? [result.contraindications[0]?.substring(0, 300)]
+          : [],
+        interactions: result.drug_interactions
+          ? [result.drug_interactions[0]?.substring(0, 300)]
+          : [],
+        instructions: result.dosage_and_administration?.[0]?.substring(0, 300) || '',
+      };
+    } catch (err) {
+      // لو FDA فشلت، منوقفش — نكمل بالاسم بس
+      console.warn('FDA API failed, using name only:', err.message);
+      return { tradName: name, sideEffects: [], contraindications: [], interactions: [] };
+    }
   }
 }

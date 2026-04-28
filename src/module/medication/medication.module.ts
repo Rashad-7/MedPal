@@ -12,6 +12,7 @@ import { PatientRepositoryService } from 'src/DB/repository/patient.repository.s
 import { CloudService } from 'src/common/multer/cloud.service';
 import { NotificationService } from 'src/common/service/notification.service';
 import { AIMedicineService } from 'src/common/service/aiMedicine.service';
+import { UserRepositoryService } from 'src/DB/repository/user.repository.service';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { AIMedicineService } from 'src/common/service/aiMedicine.service';
     CloudService,
     NotificationService,
     AIMedicineService,
+    UserRepositoryService 
   ],
   exports: [MedicationService], // عشان الـ AI Chat يستخدمه
 })

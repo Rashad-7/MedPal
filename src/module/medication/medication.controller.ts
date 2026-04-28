@@ -10,12 +10,12 @@ import { RoleType,type UserDocument } from 'src/DB/model/User.model';
 import { User } from 'src/common/decorator/user.decorator';
 import { AddMedicationDto } from './dto/medication.dto';
 import { cloudMulterOptions } from 'src/common/multer/cloud.multer.options';
+import multer from 'multer';
 
 @Controller('medication')
 export class MedicationController {
   constructor(private readonly medicationService: MedicationService) {}
 
-  // إضافة دوا يدوي
   @Auth([RoleType.USER])
   @Post('add')  
   @UseInterceptors(FileInterceptor('image', cloudMulterOptions({})))
@@ -45,14 +45,12 @@ export class MedicationController {
     return this.medicationService.getPatientMedications(user);
   }
 
-  // تقرير الأدوية الكامل
   @Auth([RoleType.USER])
   @Get('report')
   async getMedicationReport(@User() user: UserDocument) {
     return this.medicationService.getMedicationReport(user);
   }
 
-  // كل الأدوية في الـ DB
   @Auth([RoleType.USER, RoleType.ADMIN])
   @Get()
   async getAllMedicines() {
@@ -65,12 +63,24 @@ export class MedicationController {
 async getPendingLogs(@User() user: UserDocument) {
   return this.medicationService.getPendingLogs(user);
 }
-  // دوا معين بالـ ID
   @Auth([RoleType.USER, RoleType.ADMIN])
   @Get(':medicineId')
   async getMedicine(@Param('medicineId') medicineId: string) {
     return this.medicationService.getMedicine(medicineId);
     
   }
+  @Auth([RoleType.USER])
+@Post('scan')
 
+@UseInterceptors(
+  FileInterceptor('file', {
+    storage: multer.memoryStorage(),
+  }),
+)
+async scanMedicine(
+  @UploadedFile() file: Express.Multer.File,
+  @User() user: UserDocument,
+) {
+  return this.medicationService.scanAndSave(user, file);
+}
 }
