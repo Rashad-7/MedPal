@@ -2,17 +2,17 @@ import {
   IsString, IsNotEmpty, IsEnum, IsOptional,
   IsNumber, IsArray, IsDateString, Min,
 } from 'class-validator';
-import { RepeatType, WarningLevel } from 'src/DB/model/Medication.model';
+import { RepeatType } from 'src/DB/model/Medication.model';
 import { Type } from 'class-transformer';
 
 export class AddMedicationDto {
   @IsString()
   @IsNotEmpty()
   medicationName: string;
-
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  dosage: string; // "500mg"
+  dosage?: string; // "500mg"
 
   @IsEnum(RepeatType)
   repeat: RepeatType; // daily | weekly | monthly | every_x_hours
@@ -31,9 +31,9 @@ export class AddMedicationDto {
   @IsArray()
   @IsString({ each: true })
   sideEffects?: string[];
-
-  @IsEnum(WarningLevel)
-  warningLevel: WarningLevel;
+  @IsOptional()
+  @IsString()
+  warningLevel: string;
 
   @IsOptional()
   @IsString()

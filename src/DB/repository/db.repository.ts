@@ -3,15 +3,29 @@ import mongoose from 'mongoose';
 export abstract class DataBaseRepository<TDocument> {
     protected constructor(protected readonly model:Model<TDocument>) {}
 
-    async findOne({
-        filter,
-        populate
-    }:{
-        filter?:FilterQuery<TDocument>
-        populate?:PopulateOptions[]
-    }):Promise<TDocument | null>{
-        return await this.model.findOne(filter||{}).populate(populate ??[] );
-    }
+  async findOne<T = TDocument>({
+  filter,
+  populate,
+  projection,
+  options,
+}: {
+  filter?: FilterQuery<TDocument>;
+  populate?: PopulateOptions[];
+  projection?: any;
+  options?: { lean?: boolean };
+}): Promise<T | null> {
+  let query = this.model.findOne(filter || {}, projection || {});
+
+  if (populate?.length) {
+    query = query.populate(populate);
+  }
+
+  const result = options?.lean
+    ? await query.lean<T>().exec()
+    : await query.exec();
+
+  return result as T | null;
+}
 
     async create(data:Partial<TDocument>):Promise<TDocument>{
         return await this.model.create(data);

@@ -137,7 +137,7 @@ export class AIMedicineService {
     }
 
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
       const prompt = `You are a clinical pharmacist. Check for drug interactions between the new drug and the patient's current medications.
 
@@ -202,7 +202,7 @@ Be clinically accurate and concise.`;
     }
 
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
       const diseasesText = chronicDiseases
         .map((d, i) => `${i + 1}. ${d.name} (status: ${d.status})`)
@@ -266,7 +266,7 @@ Be clinically accurate. Focus on real contraindications and precautions.`;
   // ══════════════════════════════════════════
   private async getFromGemini(name: string): Promise<MedicineAIResult> {
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
       const prompt = `You are a medical information assistant. Provide detailed information about the medicine: "${name}".
 

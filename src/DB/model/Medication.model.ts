@@ -1,13 +1,14 @@
 // src/DB/model/Medication.model.ts
 import { MongooseModule, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose from 'mongoose';
 import { HydratedDocument } from 'mongoose';
 
-export enum WarningLevel {
-  SAFE = 'safe',
-  MILD = 'mild',
-  MODERATE = 'moderate',
-  SEVERE = 'severe',
-}
+// export enum WarningLevel {
+//   SAFE = 'safe',
+//   MILD = 'mild',
+//   MODERATE = 'moderate',
+//   SEVERE = 'severe',
+// }
 
 export enum RepeatType {
   DAILY = 'daily',
@@ -18,6 +19,8 @@ export enum RepeatType {
 
 @Schema({ timestamps: true })
 export class Medicine {
+    @Prop({ type: mongoose.Types.ObjectId, required: true, unique: true,ref:'User' })
+    userId: mongoose.Types.ObjectId;
   @Prop({ type: String, required: true, trim: true, unique: true })
   medicationName: string;
 
@@ -36,8 +39,8 @@ export class Medicine {
   @Prop({ type: [String], default: [] })
   sideEffects: string[];
 
-  @Prop({ type: String, enum: WarningLevel, default: WarningLevel.SAFE })
-  warningLevel: WarningLevel;
+  @Prop({ type: String, required: false })
+  warningLevel: string;
 
   // بيانات إضافية للـ AI والتقرير
   @Prop({ type: String })

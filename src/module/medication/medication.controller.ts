@@ -1,6 +1,6 @@
 // src/module/medication/medication.controller.ts
 import {
-  Body, Controller, Get, Param, Post,
+  Body, Controller, Delete, Get, Param, Post,
   UploadedFile, UseInterceptors, UsePipes, ValidationPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -69,14 +69,14 @@ async getPendingLogs(@User() user: UserDocument) {
     return this.medicationService.getMedicine(medicineId);
     
   }
-  @Auth([RoleType.USER])
-@Post('scan')
-
-@UseInterceptors(
+  @UseInterceptors(
   FileInterceptor('file', {
     storage: multer.memoryStorage(),
   }),
 )
+  @Auth([RoleType.USER])
+@Post('scan')
+
 async scanMedicine(
   @UploadedFile() file: Express.Multer.File,
   @User() user: UserDocument,
@@ -93,4 +93,12 @@ async checkInteraction(
 ) {
   return this.medicationService.checkInteraction(user, medicineName);
 } 
+@Auth([RoleType.USER])
+@Delete('remove/:medicineId')
+async removeMedication(
+  @Param('medicineId') medicineId: string,
+  @User() user: UserDocument,
+) {
+  return this.medicationService.removeMedication(user, medicineId);
+}
 }
