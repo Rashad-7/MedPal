@@ -16,6 +16,7 @@ export enum GenderType {
 export enum RoleType {
   USER = 'Patiant',
   ADMIN = 'Doctor',
+  SUPER_ADMIN = 'SuperAdmin'
 }
 @Schema({
   timestamps: true,

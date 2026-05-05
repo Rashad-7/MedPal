@@ -17,6 +17,7 @@ interface IVerifyToken {
 export enum BearerType {
   Bearer = 'Bearer',
   System = 'System',
+  SuperAdmin = 'SuperAdmin',
 }
 interface ITokenPayload extends JwtPayload {
   id: Types.ObjectId;
@@ -50,6 +51,11 @@ private getSignature(role: RoleType): { accessSignature: string; refreshSignatur
   let refreshSignature: string;
 
   switch (role) {
+     case RoleType.SUPER_ADMIN:
+      return {
+        accessSignature: process.env.SUPER_ADMIN_ACCESS_SIGNATURE!,
+        refreshSignature: process.env.SUPER_ADMIN_REFRESH_SIGNATURE!,
+      };
     case RoleType.ADMIN:
       accessSignature = process.env.ADMIN_ACCESS_SIGNATURE!;
       refreshSignature = process.env.ADMIN_REFRESH_SIGNATURE!;
@@ -73,9 +79,13 @@ async verifyToken({ authorization, type = TokenType.ACCESS }: IVerifyToken) {
     throw new BadRequestException('Token not provided');
   }
 
-  const { accessSignature, refreshSignature } = this.getSignature(
-    bearer === BearerType.System ? RoleType.ADMIN : RoleType.USER,
-  );
+const { accessSignature, refreshSignature } = this.getSignature(
+  bearer === BearerType.SuperAdmin
+    ? RoleType.SUPER_ADMIN
+    : bearer === BearerType.System
+    ? RoleType.ADMIN
+    : RoleType.USER,
+);
 
   let decoded: any;
   try {
