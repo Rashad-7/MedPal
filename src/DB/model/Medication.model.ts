@@ -21,7 +21,7 @@ export enum RepeatType {
 export class Medicine {
     @Prop({ type: mongoose.Types.ObjectId, required: true, unique: true,ref:'User' })
     userId: mongoose.Types.ObjectId;
-  @Prop({ type: String, required: true, trim: true, unique: true })
+  @Prop({ type: String, required: true, trim: true})
   medicationName: string;
 
   @Prop({ type: String, required: true })
