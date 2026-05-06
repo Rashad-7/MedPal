@@ -182,11 +182,15 @@ const doctor = await this.doctorRepositoryService.create({
     const user = await this.UserRepositoryService.findOne({
       filter: { email },
     });
-    if (!user) throw new NotFoundException('User not found');
+  if (!user) throw new NotFoundException('User not found');
+  if(user.isVerified=== false){
+    throw new BadRequestException('Your account is Blocked.');
+  }
     if (!user.confirmEmail)
       throw new BadRequestException('Please confirm your email');
     if (!compareHush(password, user.password))
       throw new BadRequestException('Invalid password or email');
+    
     const accessToken = this.jwt.sign({
       payload: { id: user._id },
       role: user.role,
@@ -214,6 +218,12 @@ const doctor = await this.doctorRepositoryService.create({
       throw new BadRequestException("in-vaild account")
     }
     if (!user.isVerified) {
+      throw new BadRequestException("Your account is blocked")
+    }
+    const doctor = await this.doctorRepositoryService.findOne({
+      filter:{userId:user._id}
+    })
+    if (doctor?.isVerified==false) {
       throw new BadRequestException("Not Verified yet")
     }
     if (!compareHush(password, user.password))

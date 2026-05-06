@@ -7,6 +7,7 @@ import { SuperAdminService } from './super-admin.service';
 import { IsEmail, IsString, MinLength } from 'class-validator';
 import { Auth } from 'src/common/decorator/auth.decorator';
 import { RoleType } from 'src/DB/model/User.model';
+import mongoose from 'mongoose';
 
 class LoginDto {
   @IsEmail() email: string;
@@ -48,7 +49,7 @@ export class SuperAdminController {
   // Reject دكتور
   @Auth([RoleType.SUPER_ADMIN])
   @Delete('doctors/:userId/reject')
-  async rejectDoctor(@Param('userId') userId: string) {
+  async rejectDoctor(@Param('userId') userId: mongoose.Types.ObjectId) {
     return this.superAdminService.rejectDoctor(userId);
   }
 
@@ -76,7 +77,12 @@ export class SuperAdminController {
   // Delete يوزر
   @Auth([RoleType.SUPER_ADMIN])
   @Delete('users/:userId')
-  async deleteUser(@Param('userId') userId: string) {
+  async deleteUser(@Param('userId') userId: mongoose.Types.ObjectId) {
     return this.superAdminService.deleteUser(userId);
   }
+  @Auth([RoleType.SUPER_ADMIN])
+@Get('reports')
+async getReports() {
+  return this.superAdminService.getReportsPage();
+}
 }
