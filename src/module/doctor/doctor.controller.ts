@@ -1,4 +1,4 @@
-import { Controller, Get, Headers, Param, Patch, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Headers, Param, Patch, Query, UseInterceptors } from '@nestjs/common';
 import { DoctorService } from './doctor.service';
 import { Auth } from 'src/common/decorator/auth.decorator';
 import { RoleType, type UserDocument } from 'src/DB/model/User.model';
@@ -51,5 +51,16 @@ async getPatient(
 @Get('patients')
 async getMyPatients(@User() user: UserDocument) {
   return this.doctorService.getMyPatients(user);
+}
+@Auth([RoleType.ADMIN])
+@Get('report')
+getPatientsReport(
+  @User() user: UserDocument,
+  @Query('patientId') patientId?: mongoose.Types.ObjectId,
+) {
+  return this.doctorService.getPatientsReport(
+    user,
+    patientId ? new mongoose.Types.ObjectId(patientId) : undefined,
+  );
 }
 }

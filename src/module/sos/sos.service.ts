@@ -30,7 +30,7 @@ export class SOSService {
       (d) => d.toString() === doctorId.toString(),
     );
 
-    if (!isMyDoctor) throw new ForbiddenException('هذا الدكتور مش في قائمتك');
+    if (!isMyDoctor) throw new ForbiddenException('This doctor is not assigned to you');
 
     const sos = await this.sosRepository.create({
       patientId: user._id,
@@ -57,7 +57,7 @@ export class SOSService {
       populate: [
         {
           path: 'patientId',
-          select: 'fullName email phone',
+          select: 'fullName email phone image',
         },
       ],
     });
@@ -99,7 +99,7 @@ export class SOSService {
       populate: [
         {
           path: 'doctorId',
-          select: 'fullName email',
+          select: 'fullName email phone image',
         },
       ],
     });

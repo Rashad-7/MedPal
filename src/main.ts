@@ -7,7 +7,6 @@ async function bootstrap() {
   const port: number | string = process.env.PORT! ;
   const app = await NestFactory.create(AppModule);
   // app.use(setDefaulteLangauge)
-  
   app.enableCors({
     origin: '*',
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],

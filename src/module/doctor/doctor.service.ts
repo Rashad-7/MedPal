@@ -9,6 +9,8 @@ import { ReqRepositoryService } from 'src/DB/repository/req.repository.service';
 import mongoose, { Types } from 'mongoose';
 import { PatientRepositoryService } from 'src/DB/repository/patient.repository.service';
 import { PatientDocument } from 'src/DB/model/patient.model';
+import { MedicationLogDocument } from 'src/DB/model/MedicationLog.model';
+import { MedicationLogRepositoryService } from 'src/DB/repository/medicationLog.repository.service';
 
 @Injectable()
 export class DoctorService {
@@ -16,7 +18,8 @@ constructor(
         private readonly userRepository:UserRepositoryService<UserDocument>,
          private readonly doctorRepository:DoctorRepositoryService<DoctorDocument>,
          private readonly reqRepository:ReqRepositoryService<RequestDocument>,
-         private readonly patientRepository:PatientRepositoryService<PatientDocument>
+         private readonly patientRepository:PatientRepositoryService<PatientDocument>,
+         private readonly medicationLogRepository: MedicationLogRepositoryService<MedicationLogDocument>
 ){   
 }
       async profile(user:UserDocument){
@@ -164,5 +167,183 @@ async getMyPatients(user: UserDocument) {
   });
 
   return { message: 'done', total: patients.length || 0, data: patients };
+}
+async getPatientsReport(
+  user: UserDocument,
+  patientId?: mongoose.Types.ObjectId,
+) {
+  const doctor = await this.doctorRepository.findOne({
+    filter: { userId: user._id },
+  });
+
+  if (!doctor) {
+    throw new NotFoundException('Doctor not found');
+  }
+
+  // فلتر المرضى
+  const filter: any = {
+    userId: { $in: doctor.patients || [] },
+  };
+
+  // لو بعت patientId هيرجع مريض واحد
+  if (patientId) {
+    filter.userId = patientId;
+  }
+
+  // جيب المرضى
+  const patients = await this.patientRepository.find({
+    filter,
+    populate: [
+      {
+        path: 'userId',
+        select: 'fullName email phone DOB gender image',
+      },
+    ],
+  });
+
+  if (!patients.length) {
+    throw new NotFoundException('No patients found');
+  }
+
+  // =========================
+  // احسب الإحصائيات
+  // =========================
+  const patientsWithStats = await Promise.all(
+    patients.map(async (patient: any) => {
+      const activeMeds =
+        patient.medications?.filter((m: any) => m.active) || [];
+
+      const severeMeds = activeMeds.filter((m: any) =>
+        ['severe', 'moderate'].includes(m.warningLevel),
+      );
+
+      const chronicCount =
+        patient.chronicDiseases?.length || 0;
+
+      // =========================
+      // missed doses لكل دواء
+      // =========================
+      const medicationStats = await Promise.all(
+        activeMeds.map(async (med: any) => {
+        const missedLogs =
+  await this.medicationLogRepository.find({
+    filter: {
+      patientId: patient.userId._id,
+      medicineId: med._id,
+      status: 'missed',
+    },
+  });
+
+const missedCount = missedLogs.length;
+          return {
+            medicineId: med._id,
+            medicineName: med.name,
+            missedDoses: missedCount,
+          };
+        }),
+      );
+
+      // إجمالي الجرعات الفائتة
+      const missedDoses = medicationStats.reduce(
+        (sum, med) => sum + med.missedDoses,
+        0,
+      );
+
+      // =========================
+      // الحالة الصحية
+      // =========================
+      let healthStatus = 'stable';
+
+      if (
+        severeMeds.length > 0 ||
+        chronicCount >= 3 ||
+        missedDoses >= 5
+      ) {
+        healthStatus = 'critical';
+      } else if (
+        chronicCount >= 1 ||
+        activeMeds.length >= 3 ||
+        missedDoses > 0
+      ) {
+        healthStatus = 'moderate';
+      }
+
+      return {
+        patientInfo: patient.userId,
+
+        bloodType: patient.bloodType,
+        height: patient.height,
+        weight: patient.weight,
+
+        allergies: patient.allergies,
+
+        chronicDiseases:
+          patient.chronicDiseases || [],
+
+        activeMedications: activeMeds,
+
+        medicationStats,
+
+        stats: {
+          totalMedications: activeMeds.length,
+
+          warningMedications: severeMeds.length,
+
+          chronicDiseases: chronicCount,
+
+          missedDoses,
+
+          healthStatus,
+        },
+      };
+    }),
+  );
+
+  // =========================
+  // Summary
+  // =========================
+  const summary = {
+    totalPatients: patientsWithStats.length,
+
+    criticalPatients: patientsWithStats.filter(
+      (p) => p.stats.healthStatus === 'critical',
+    ).length,
+
+    moderatePatients: patientsWithStats.filter(
+      (p) => p.stats.healthStatus === 'moderate',
+    ).length,
+
+    stablePatients: patientsWithStats.filter(
+      (p) => p.stats.healthStatus === 'stable',
+    ).length,
+
+    totalActiveMedications:
+      patientsWithStats.reduce(
+        (sum, p) =>
+          sum + p.stats.totalMedications,
+        0,
+      ),
+
+    patientsWithWarningMeds:
+      patientsWithStats.filter(
+        (p) =>
+          p.stats.warningMedications > 0,
+      ).length,
+
+    totalMissedDoses:
+      patientsWithStats.reduce(
+        (sum, p) =>
+          sum + p.stats.missedDoses,
+        0,
+      ),
+  };
+
+  return {
+    message: 'done',
+    summary,
+    data: patientId
+      ? patientsWithStats[0]
+      : patientsWithStats,
+  };
 }
 }
