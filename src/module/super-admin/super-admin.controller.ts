@@ -42,7 +42,7 @@ export class SuperAdminController {
   // Verify دكتور
   @Auth([RoleType.SUPER_ADMIN])
   @Patch('doctors/:userId/verify')
-  async verifyDoctor(@Param('userId') userId: string) {
+  async verifyDoctor(@Param('userId') userId: mongoose.Types.ObjectId) {
     return this.superAdminService.verifyDoctor(userId);
   }
 

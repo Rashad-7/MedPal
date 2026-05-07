@@ -87,29 +87,48 @@ export class SuperAdminService {
   }
 
   // ── Verify Doctor ──
-  async verifyDoctor(doctorUserId: string) {
-    const user = await this.userRepository.findOne({
-      filter: { _id: doctorUserId, role: RoleType.ADMIN },
-    });
-    if (!user) throw new NotFoundException('Doctor not found');
-if (user.isVerified) throw new BadRequestException('Doctor already verified');
-    await this.userRepository.updateOne({
-      filter: { _id: doctorUserId },
-      data: { isVerified: true },
-    });
+async verifyDoctor(userId: mongoose.Types.ObjectId) {
 
-    await this.doctorRepository.updateOne({
-      filter: { userId: doctorUserId },
-      data: { isVerified: true },
-    });
+  const user = await this.userRepository.findOne({
+    filter: { _id: userId, role: RoleType.ADMIN },
+  });
 
-    return { message: 'Doctor verified successfully' };
+  if (!user) {
+    throw new NotFoundException('Doctor not found');
   }
 
+  const doctor = await this.doctorRepository.findOne({
+    filter: { userId: user._id },
+  });
+
+  if (!doctor) {
+    throw new NotFoundException('Doctor profile not found');
+  }
+
+  // checks BEFORE update
+  if (doctor.isVerified || user.isVerified) {
+    throw new BadRequestException('Doctor already verified');
+  }
+
+  // update user
+  await this.userRepository.updateOne({
+    filter: { _id: userId },
+    data: { isVerified: true },
+  });
+
+  // update doctor
+  await this.doctorRepository.updateOne({
+    filter: { userId: user._id },
+    data: { isVerified: true },
+  });
+
+  return { message: 'Doctor verified successfully' };
+}
+
   // ── Reject Doctor ──
-  async rejectDoctor(doctorUserId: mongoose.Types.ObjectId) {
+  async rejectDoctor(userId: mongoose.Types.ObjectId) {
     const user = await this.userRepository.findOne({
-      filter: { _id: doctorUserId, role: RoleType.ADMIN },
+      filter: { _id: userId, role: RoleType.ADMIN },
     });
     if (!user) throw new NotFoundException('Doctor not found');
 
