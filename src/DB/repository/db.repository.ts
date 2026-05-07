@@ -33,12 +33,12 @@ export abstract class DataBaseRepository<TDocument> {
     async updateOne({filter,data}:{filter:FilterQuery<TDocument>,data:any}):Promise<UpdateWriteOpResult>{
         return await this.model.updateOne(filter,data);
     }
-        async find({
+      async find({
   filter = {},
-  select = "",
+  select = '',
   populate = [],
   skip = 0,
-  limit= 10,
+  limit,
 }: {
   filter?: FilterQuery<any>;
   select?: string;
@@ -46,12 +46,16 @@ export abstract class DataBaseRepository<TDocument> {
   skip?: number;
   limit?: number;
 }) {
-  return await this.model
+  const query = this.model
     .find(filter)
     .select(select)
     .populate(populate)
-    .skip(skip)
-    .limit(limit);
+    .skip(skip);
+  if (limit) {
+    query.limit(limit);
+  }
+
+  return await query;
 }
 async findById({
   id ,
