@@ -50,8 +50,8 @@ async updateProfileImage(
   }
 @Auth([RoleType.USER,RoleType.ADMIN])
 @Get("getDoctors")
-async getDoctors(@Query() query:GetDoctorsDto){
-return this.userService.getDoctors(query)
+async getDoctors(@Query() query:GetDoctorsDto ,@User() patient:any){
+return this.userService.getDoctors(query, patient)
 }
 @Auth([RoleType.USER,RoleType.ADMIN])
 @Patch("sendReq/:receiverId")

@@ -73,14 +73,14 @@ export class UserService {
       throw new InternalServerErrorException(err!.message);
     }
   }
-  async getDoctors(query: GetDoctorsDto) {
+async getDoctors(query: GetDoctorsDto, patient: any) {
   const {
     specialization,
     address,
     fullName,
     experienceYears,
-    page ,
-    limit ,
+    page,
+    limit,
     qualification,
     rate,
   } = query;
@@ -100,7 +100,7 @@ export class UserService {
     limit: limitNumber,
     populate: [
       {
-        path: "userId", 
+        path: "userId",
         match: {
           ...(fullName && {
             fullName: { $regex: fullName, $options: "i" },
@@ -114,9 +114,16 @@ export class UserService {
     ],
   });
 
-  const filteredDoctors = doctors.filter(doc => doc.userId);
+  const filteredDoctors = doctors.filter((doc) => doc.userId);
 
-  return filteredDoctors;
+  const result = filteredDoctors.map((doctor) => ({
+    ...doctor.toObject(),
+isMyDoctor: patient?.doctors?.some(
+  (id) => id.toString() === doctor.userId.toString()
+) || false,
+  }));
+
+  return result;
 }
 async sendRequest(senderId: mongoose.Types.ObjectId,param:SendRequestDto) {
   const {receiverId}=param

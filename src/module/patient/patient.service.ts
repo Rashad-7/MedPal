@@ -86,7 +86,6 @@ async getMyDoctors(user: UserDocument) {
     ],
     select: '-createdAt -updatedAt',
   });
-
   return { message: 'done', total: doctors.length, data: doctors };
 }
 }
