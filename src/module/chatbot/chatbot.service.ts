@@ -120,4 +120,28 @@ IMPORTANT: If the patient asks about a symptom and it matches a side effect of o
       },
     };
   }
+  // service
+async getChatHistory(user: UserDocument) {
+  const session = await this.chatSessionRepository.findOne({
+    filter: { userId: user._id },
+  });
+
+  if (!session) {
+    return {
+      message: 'No chat history found',
+      totalMessages: 0,
+      data: [],
+    };
+  }
+
+  return {
+    message: 'done',
+    totalMessages: session.history.length,
+    data: session.history.sort(
+      (a: any, b: any) =>
+        new Date(a.createdAt).getTime() -
+        new Date(b.createdAt).getTime(),
+    ),
+  };
+}
 }

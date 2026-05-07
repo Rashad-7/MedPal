@@ -1,5 +1,5 @@
 // src/module/chatbot/chatbot.controller.ts
-import { Body, Controller, Post, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Post, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ChatBotService } from 'src/module/chatbot/chatbot.service';
 import { Auth } from 'src/common/decorator/auth.decorator';
 import { RoleType, type UserDocument } from 'src/DB/model/User.model';
@@ -19,4 +19,9 @@ export class ChatBotController {
   ) {
     return this.chatBotService.chat(user, body.message);
   }
+  @Auth([RoleType.USER])
+  @Get('history')
+getChatHistory(@User() user: UserDocument) {
+  return this.chatBotService.getChatHistory(user);
+}
 }
