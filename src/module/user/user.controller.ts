@@ -12,6 +12,7 @@ import { ValidationPipe as NestValidationPipe } from '@nestjs/common';
 import { UpdateProfileDto } from './udateProfile.dto';
 import { GetDoctorsDto, SendRequestDto } from './dto/user.dto';
 import mongoose from 'mongoose';
+import { type PatientDocument } from 'src/DB/model/patient.model';
 
 @Controller('user')
 export class UserController {
@@ -48,10 +49,10 @@ async updateProfileImage(
   ) {
     return this.userService.updateProfile(user, body);
   }
-@Auth([RoleType.USER,RoleType.ADMIN])
+@Auth([RoleType.USER])
 @Get("getDoctors")
-async getDoctors(@Query() query:GetDoctorsDto ,@User() patient:any){
-return this.userService.getDoctors(query, patient)
+async getDoctors(@Query() query:GetDoctorsDto ,@User() user: UserDocument){
+return this.userService.getDoctors(query, user)
 }
 @Auth([RoleType.USER,RoleType.ADMIN])
 @Patch("sendReq/:receiverId")

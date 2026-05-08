@@ -17,7 +17,7 @@ import { DoctorRepositoryService } from 'src/DB/repository/doctor.repository.ser
 import { Doctor, DoctorDocument, doctorModel } from 'src/DB/model/doctor.model';
 import { ReqRepositoryService } from 'src/DB/repository/req.repository.service';
 import { RequestDocument, RequestStatus } from 'src/DB/model/Req.model';
-import { PatientDocument } from 'src/DB/model/patient.model';
+import { type PatientDocument } from 'src/DB/model/patient.model';
 
 @Injectable()
 export class UserService {
@@ -73,55 +73,59 @@ export class UserService {
       throw new InternalServerErrorException(err!.message);
     }
   }
-async getDoctors(query: GetDoctorsDto, patient: any) {
+async getDoctors(query: GetDoctorsDto, user: UserDocument) {
   const {
-    specialization,
-    address,
-    fullName,
-    experienceYears,
-    page,
-    limit,
-    qualification,
-    rate,
+    specialization, address, fullName,
+    experienceYears, page, limit, qualification, rate,
   } = query;
 
   const { limitNumber, skip } = getPagination(page, limit);
 
-  const filter: any = {};
+  // ── جيب الـ patient من الـ DB عشان تضمن إن doctors موجودة ──
+  const freshPatient = await this.patientRepository.findOne({
+    filter: { userId: new mongoose.Types.ObjectId(user._id) },
+  });
+  const myDoctorUserIds = freshPatient?.doctors?.map(id => id.toString()) || [];
+ 
 
+  // ── build doctor filter ──
+  const filter: any = {};
   if (specialization) filter.specialization = specialization;
   if (experienceYears) filter.experienceYears = { $gte: experienceYears };
   if (qualification) filter.qualification = qualification;
   if (rate) filter.rate = { $gte: rate };
 
+  // ── جيب الـ doctors مع populate بدون match ──
   const doctors = await this.doctorRepository.find({
     filter,
     skip,
     limit: limitNumber,
     populate: [
       {
-        path: "userId",
-        match: {
-          ...(fullName && {
-            fullName: { $regex: fullName, $options: "i" },
-          }),
-          ...(address && {
-            address: { $regex: address, $options: "i" },
-          }),
-        },
-        select: "fullName address email",
+        path: 'userId',
+        select: 'fullName address email',
       },
     ],
   });
 
-  const filteredDoctors = doctors.filter((doc) => doc.userId);
+  // ── فلتر يدوي على fullName و address ──
+  const filteredDoctors = doctors.filter((doc) => {
+    if (!doc.userId) return false;
+    const user = doc.userId as any;
+    if (fullName && !user.fullName?.match(new RegExp(fullName, 'i'))) return false;
+    if (address && !user.address?.match(new RegExp(address, 'i'))) return false;
+    return true;
+  });
 
-  const result = filteredDoctors.map((doctor) => ({
-    ...doctor.toObject(),
-isMyDoctor: patient?.doctors?.some(
-  (id) => id.toString() === doctor.userId.toString()
-) || false,
-  }));
+  // ── map مع isMyDoctor ──
+  const result = filteredDoctors.map((doctor) => {
+    const doctorObj = doctor.toObject();
+    const doctorUserId = (doctorObj.userId as any)?._id?.toString();    
+    return {
+      ...doctorObj,
+      isMyDoctor: myDoctorUserIds.includes(doctorUserId ?? ''),
+    };
+  });
 
   return result;
 }
