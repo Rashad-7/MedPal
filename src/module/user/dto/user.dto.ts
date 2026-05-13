@@ -48,7 +48,7 @@ export class GetDoctorsDto {
 }
 export class SendRequestDto {
   @IsMongoId()
-  receiverId: mongoose.Types.ObjectId; // doctorId
+  receiverId: mongoose.Types.ObjectId; 
 }
 
  

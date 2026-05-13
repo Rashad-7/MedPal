@@ -81,21 +81,21 @@ async getDoctors(query: GetDoctorsDto, user: UserDocument) {
 
   const { limitNumber, skip } = getPagination(page, limit);
 
-  // ── جيب الـ patient من الـ DB عشان تضمن إن doctors موجودة ──
+  
   const freshPatient = await this.patientRepository.findOne({
     filter: { userId: new mongoose.Types.ObjectId(user._id) },
   });
   const myDoctorUserIds = freshPatient?.doctors?.map(id => id.toString()) || [];
  
 
-  // ── build doctor filter ──
+  
   const filter: any = {};
   if (specialization) filter.specialization = specialization;
   if (experienceYears) filter.experienceYears = { $gte: experienceYears };
   if (qualification) filter.qualification = qualification;
   if (rate) filter.rate = { $gte: rate };
 
-  // ── جيب الـ doctors مع populate بدون match ──
+  
   const doctors = await this.doctorRepository.find({
     filter,
     skip,
@@ -108,7 +108,7 @@ async getDoctors(query: GetDoctorsDto, user: UserDocument) {
     ],
   });
 
-  // ── فلتر يدوي على fullName و address ──
+  
   const filteredDoctors = doctors.filter((doc) => {
     if (!doc.userId) return false;
     const user = doc.userId as any;
@@ -117,7 +117,7 @@ async getDoctors(query: GetDoctorsDto, user: UserDocument) {
     return true;
   });
 
-  // ── map مع isMyDoctor ──
+  
   const result = filteredDoctors.map((doctor) => {
     const doctorObj = doctor.toObject();
     const doctorUserId = (doctorObj.userId as any)?._id?.toString();    
@@ -135,7 +135,7 @@ async sendRequest(senderId: mongoose.Types.ObjectId,param:SendRequestDto) {
     throw new BadRequestException('You cannot send request to yourself');
   }
 
-  // 🔥 check receiver is doctor using repository (same style)
+  
   const receiver = await this.userRepository.findById({
     id: receiverId,
     select: 'role',
@@ -149,7 +149,7 @@ async sendRequest(senderId: mongoose.Types.ObjectId,param:SendRequestDto) {
     throw new BadRequestException('You can only send requests to doctors');
   }
 
-  // 🔥 check duplicate request using repository
+  
   const exists = await this.reqRepository.find({
     filter: {
       senderId,
@@ -163,7 +163,7 @@ async sendRequest(senderId: mongoose.Types.ObjectId,param:SendRequestDto) {
     throw new BadRequestException('Request already exists');
   }
   
-// ✅ Check if doctor already exists
+
 const patient = await this.patientRepository.findOne({
   filter: { userId: senderId }
 });
@@ -181,14 +181,14 @@ if (
   });
 
 }
-// async getMyStatusRequests(user: UserDocument) {
-//   const requests = await this.reqRepository.find({
-//     filter: { senderId: user._id },
-//     populate: [
-//       { path: 'receiverId ', select: 'fullName email' },
-//     ],
-//   }); 
-//   return { message: 'done', total: requests.length, data: requests };
-// }
+
+
+
+
+
+
+
+
+
 
 }

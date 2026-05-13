@@ -10,7 +10,7 @@ import type { DoctorDocument } from 'src/DB/model/doctor.model';
 @Controller('doctor')
 export class DoctorController {
   constructor(private readonly doctorService: DoctorService) {}
-  // UseInterceptors(WatchInterceptor)
+  
   @Auth([RoleType.ADMIN])
   @Get('profile')
   async Profile(

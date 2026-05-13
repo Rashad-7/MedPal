@@ -1,14 +1,14 @@
-// src/DB/model/Medication.model.ts
+
 import { MongooseModule, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 import { HydratedDocument } from 'mongoose';
 
-// export enum WarningLevel {
-//   SAFE = 'safe',
-//   MILD = 'mild',
-//   MODERATE = 'moderate',
-//   SEVERE = 'severe',
-// }
+
+
+
+
+
+
 
 export enum RepeatType {
   DAILY = 'daily',
@@ -25,10 +25,10 @@ export class Medicine {
   medicationName: string;
 
   @Prop({ type: String, required: true })
-  dosage: string; // مثلاً "500mg"
+  dosage: string; 
 
   @Prop({ type: String, enum: RepeatType, required: true })
-  repeat: RepeatType; // daily | weekly | monthly | every_x_hours
+  repeat: RepeatType; 
 
   @Prop({ type: Number, required: false })
   repeatEveryHours?: number; 
@@ -42,7 +42,7 @@ export class Medicine {
   @Prop({ type: String, required: false })
   warningLevel: string;
 
-  // بيانات إضافية للـ AI والتقرير
+  
   @Prop({ type: String })
   activeIngredient?: string;
 

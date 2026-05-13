@@ -1,4 +1,4 @@
-// src/module/chat/chat.gateway.ts
+
 import {
   WebSocketGateway, WebSocketServer, SubscribeMessage,
   MessageBody, ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect,
@@ -18,7 +18,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  private connectedUsers = new Map<string, string>(); // userId → socketId
+  private connectedUsers = new Map<string, string>(); 
 
   constructor(
     private readonly chatService: ChatService,
@@ -46,12 +46,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const user = client.data.user;
     if (user) {
       this.connectedUsers.delete(user._id.toString());
-      // لو كان في مكالمة، بلّغ الطرف التاني
+      
       this.server.emit(`callEnded_${user._id}`, { reason: 'disconnected' });
     }
   }
 
-  // ============ إرسال رسالة نص ============
+  
   @SubscribeMessage('sendMessage')
   async handleMessage(
     @ConnectedSocket() client: Socket,
@@ -75,7 +75,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return saved;
   }
 
-  // ============ جلب التاريخ ============
+  
   @SubscribeMessage('getHistory')
   async handleGetHistory(
     @ConnectedSocket() client: Socket,
@@ -94,9 +94,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.emit('chatHistory', history);
   }
 
-  // ============ WebRTC Signaling ============
+  
 
-  // 1. بدء مكالمة
+  
   @SubscribeMessage('initiateCall')
   async handleInitiateCall(
     @ConnectedSocket() client: Socket,
@@ -112,7 +112,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     const receiverSocketId = this.connectedUsers.get(data.receiverId);
     if (receiverSocketId) {
-      // بلّغ المستقبل إن في مكالمة جاية
+      
       this.server.to(receiverSocketId).emit('incomingCall', {
         callId: call._id,
         callerId: caller._id,
@@ -123,7 +123,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.emit('callInitiated', { callId: call._id });
   }
 
-  // 2. WebRTC Offer
+  
   @SubscribeMessage('webrtcOffer')
   handleOffer(
     @ConnectedSocket() client: Socket,
@@ -139,7 +139,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  // 3. WebRTC Answer
+  
   @SubscribeMessage('webrtcAnswer')
   async handleAnswer(
     @ConnectedSocket() client: Socket,
@@ -156,7 +156,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  // 4. ICE Candidates
+  
   @SubscribeMessage('iceCandidate')
   handleIceCandidate(
     @ConnectedSocket() client: Socket,
@@ -170,7 +170,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  // 5. رفض المكالمة
+  
   @SubscribeMessage('rejectCall')
   async handleRejectCall(
     @ConnectedSocket() client: Socket,
@@ -184,7 +184,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  // 6. إنهاء المكالمة
+  
   @SubscribeMessage('endCall')
   async handleEndCall(
     @ConnectedSocket() client: Socket,

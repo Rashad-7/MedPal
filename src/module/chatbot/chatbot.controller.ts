@@ -1,4 +1,4 @@
-// src/module/chatbot/chatbot.controller.ts
+
 import { Body, Controller, Get, Post, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ChatBotService } from 'src/module/chatbot/chatbot.service';
 import { Auth } from 'src/common/decorator/auth.decorator';

@@ -1,11 +1,11 @@
-// src/common/service/notification.service.ts
+
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 
 @Injectable()
 export class NotificationService implements OnModuleInit {
   onModuleInit() {
-    // لو Firebase مش initialized
+    
     if (!admin.apps.length) {
       admin.initializeApp({
         credential: admin.credential.cert({

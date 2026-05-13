@@ -1,4 +1,4 @@
-// src/module/chat/dto/chat.dto.ts
+
 import { IsMongoId, IsString, IsNotEmpty, IsOptional } from 'class-validator';
 import mongoose from 'mongoose';
 

@@ -49,9 +49,9 @@ async getMedicineNameFromImage(file: Express.Multer.File): Promise<string> {
   if (!file) throw new BadRequestException('Image is required');
 
   try {
-    // =========================
-    // 1. IMAGE MODEL (FAST PATH)
-    // =========================
+    
+    
+    
     const FormData = require('form-data');
     const axios = require('axios');
 
@@ -86,9 +86,9 @@ if (!url) throw new Error('AI_MODEL_URL missing');
 
     name = String(name).trim();
 
-    // =========================
-    // 2. GROQ CLEANUP (FAST FIX)
-    // =========================
+    
+    
+    
     const cleaned = await this.groq.chat.completions.create({
       model: 'llama-3.1-8b-instant',
       messages: [
@@ -116,9 +116,9 @@ if (!url) throw new Error('AI_MODEL_URL missing');
     );
   }
 }
-  // =========================
-  // helper Groq call
-  // =========================
+  
+  
+  
   private async callGroq(prompt: string) {
     const res = await this.groq.chat.completions.create({
       model: 'llama-3.1-8b-instant',
@@ -140,9 +140,9 @@ if (!url) throw new Error('AI_MODEL_URL missing');
     );
   }
 
-  // =========================
-  // Medicine data
-  // =========================
+  
+  
+  
   async getMedicineData(name: string): Promise<MedicineAIResult> {
     try {
       const prompt = `
@@ -188,9 +188,9 @@ Return ONLY JSON:
     }
   }
 
-  // =========================
-  // Drug interactions
-  // =========================
+  
+  
+  
   async checkDrugInteractions(
     newDrug: string,
     currentMedications: string[],
@@ -226,9 +226,9 @@ Return JSON:
     }
   }
 
-  // =========================
-  // Chronic disease check
-  // =========================
+  
+  
+  
   async checkChronicDiseaseCompatibility(
     drugName: string,
     diseases: any[],

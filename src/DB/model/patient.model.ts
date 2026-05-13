@@ -29,7 +29,7 @@ export class Patient {
   @Prop({ type: Date, required: false })
   Reminder: Date;
 
-    @Prop({ type: HealthReportSchema })  // ✅ Sub-schema
+    @Prop({ type: HealthReportSchema })  
   healthReport: HealthReport;
   @Prop({ type: String, required: true })
   bloodType: string;

@@ -67,17 +67,17 @@ export const UserSchema = SchemaFactory.createForClass(User);
 UserSchema.set('toJSON', { virtuals: true });
 UserSchema.set('toObject', { virtuals: true });
 
-//   UserSchema.pre('save', function (next) {
-//   if (this.isModified('password')) {
-//     this.password = generateHush(this.password);
-//   }
-//   if (this.isModified('confirmEmailOTP')) {
-//     this.confirmEmailOTP = generateHush(this.confirmEmailOTP);
-//   }
-//   next();
-// });
 
-// export const UserModel = MongooseModule.forFeature([{name:User.name,schema:UserSchema}])
+
+
+
+
+
+
+
+
+
+
 
 export const UserModel = MongooseModule.forFeatureAsync([
   {

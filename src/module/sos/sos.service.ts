@@ -1,4 +1,4 @@
-// src/module/sos/sos.service.ts
+
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { SOSDocument } from 'src/DB/model/SOS.model';
 import { SOSRepositoryService } from 'src/DB/repository/sos.repository.service';
@@ -15,11 +15,11 @@ export class SOSService {
     private readonly patientRepository: PatientRepositoryService<PatientDocument>,
   ) {}
 
-  // ============ المريض يبعت SOS ============
+  
   async createSOS(user: UserDocument, body: CreateSOSDto) {
     const { doctorId, updateType, severity, details } = body;
 
-    // تأكد إن الدكتور في قائمة المريض
+    
     const patient = await this.patientRepository.findOne({
       filter: { userId: user._id },
     });
@@ -44,7 +44,7 @@ export class SOSService {
     return { message: 'SOS sent successfully', data: sos };
   }
 
-  // ============ الدكتور يشوف الـ SOS بتوعه ============
+  
   async getDoctorSOS(user: UserDocument, isResolved?: string) {
     const filter: any = { doctorId: user._id };
 
@@ -62,7 +62,7 @@ export class SOSService {
       ],
     });
 
-    // رتب بالـ severity — critical الأول
+    
     const severityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
     const sorted = sosList.sort(
       (a: any, b: any) =>
@@ -72,7 +72,7 @@ export class SOSService {
     return { message: 'done', total: sorted.length, data: sorted };
   }
 
-  // ============ الدكتور يعمل resolve ============
+  
   async resolveSOS(sosId: string, user: UserDocument) {
     const sos = await this.sosRepository.findOne({
       filter: {
@@ -92,7 +92,7 @@ export class SOSService {
     return { message: 'SOS resolved successfully' };
   }
 
-  // ============ المريض يشوف الـ SOS بتوعه ============
+  
   async getPatientSOS(user: UserDocument) {
     const sosList = await this.sosRepository.find({
       filter: { patientId: user._id },

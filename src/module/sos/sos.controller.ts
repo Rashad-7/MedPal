@@ -1,4 +1,4 @@
-// src/module/sos/sos.controller.ts
+
 import {
   Body, Controller, Get, Param,
   Patch, Post, Query, UsePipes, ValidationPipe,
@@ -13,7 +13,7 @@ import { CreateSOSDto } from './dto/sos.dto';
 export class SOSController {
   constructor(private readonly sosService: SOSService) {}
 
-  // المريض يبعت SOS
+  
   @Auth([RoleType.USER])
   @Post()
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
@@ -24,7 +24,7 @@ export class SOSController {
     return this.sosService.createSOS(user, body);
   }
 
-  // الدكتور يشوف الـ SOS — فلتر اختياري ?isResolved=true/false
+  
   @Auth([RoleType.ADMIN])
   @Get()
   async getDoctorSOS(
@@ -34,14 +34,14 @@ export class SOSController {
     return this.sosService.getDoctorSOS(user, isResolved);
   }
 
-  // المريض يشوف الـ SOS بتوعه
+  
   @Auth([RoleType.USER])
   @Get('my')
   async getPatientSOS(@User() user: UserDocument) {
     return this.sosService.getPatientSOS(user);
   }
 
-  // الدكتور يعمل resolve
+  
   @Auth([RoleType.ADMIN])
   @Patch(':sosId/resolve')
   async resolveSOS(

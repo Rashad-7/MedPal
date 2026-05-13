@@ -1,4 +1,4 @@
-// src/DB/model/SOS.model.ts
+
 import { MongooseModule, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 

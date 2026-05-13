@@ -1,4 +1,4 @@
-// src/module/medication/medication.controller.ts
+
 import {
   Body, Controller, Delete, Get, Param, Post,
   UploadedFile, UseInterceptors, UsePipes, ValidationPipe,
@@ -28,7 +28,7 @@ export class MedicationController {
     return this.medicationService.addMedication(user, body, file);
   }
 
-  // تسجيل أخد الدوا
+  
   @Auth([RoleType.USER])
   @Post('take/:logId')
   async takeMedication(
@@ -38,7 +38,7 @@ export class MedicationController {
     return this.medicationService.takeMedication(user, logId);
   }
 
-  // جيب أدوية المريض مع التفاصيل الكاملة
+  
   @Auth([RoleType.USER])
   @Get('my')
   async getMyMedications(@User() user: UserDocument) {
@@ -84,7 +84,7 @@ async scanMedicine(
   return this.medicationService.scanAndSave(user, file);
   
 }
-// فحص تفاعل دوا مع أدوية المريض الحالية
+
 @Auth([RoleType.USER])
 @Get('check-interaction/:medicineName')
 async checkInteraction(

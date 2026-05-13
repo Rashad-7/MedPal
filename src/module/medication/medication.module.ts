@@ -1,4 +1,4 @@
-// src/module/medication/medication.module.ts
+
 import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -35,6 +35,6 @@ import { AIMedicineGroqService } from 'src/common/service/aiMedicine.groq.servic
     UserRepositoryService,
     AIMedicineGroqService
   ],
-  exports: [MedicationService], // عشان الـ AI Chat يستخدمه
+  exports: [MedicationService], 
 })
 export class MedicationModule {}

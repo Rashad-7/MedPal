@@ -1,4 +1,4 @@
-// src/common/service/aiMedicine.service.ts
+
 import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
@@ -52,9 +52,9 @@ export class AIMedicineService {
     this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
   }
 
-  // ══════════════════════════════════════════
-// GET MEDICINE NAME FROM IMAGE USING AI MODEL
-  // ══════════════════════════════════════════
+  
+
+  
   async getMedicineNameFromImage(file: Express.Multer.File): Promise<string> {
     if (!file) throw new BadRequestException('Image is required');
 
@@ -99,18 +99,18 @@ export class AIMedicineService {
     }
   }
 
-  // ══════════════════════════════════════════
-  // 2. جيب تفاصيل الدوا من Gemini
-  // ══════════════════════════════════════════
+  
+  
+  
   async getMedicineData(
     name?: string,
     file?: Express.Multer.File,
   ): Promise<MedicineAIResult> {
     if (!name && !file) {
-      throw new BadRequestException('يجب إرسال اسم الدوا أو صورته');
+      throw new BadRequestException('Either medicine name or image is required');
     }
 
-    // لو في صورة → جيب الاسم من موديلك الأول
+    
     let medicineName = name;
     if (file) {
       medicineName = await this.getMedicineNameFromImage(file);
@@ -120,12 +120,12 @@ export class AIMedicineService {
     return await this.getFromGemini(medicineName!);
   }
 
-  // ══════════════════════════════════════════
-//Check for drug interactions between a new drug and patient's current medications
-  // ══════════════════════════════════════════
+  
+
+  
   async checkDrugInteractions(
     newDrug: string,
-    currentMedications: string[] // get from patient's current medication logs, or from their profile if you store it there
+    currentMedications: string[] 
   ): Promise<DrugInteractionResult> {
     if (!currentMedications || currentMedications.length === 0) {
       return {
@@ -184,9 +184,9 @@ Be clinically accurate and concise.`;
     }
   }
 
-  // ══════════════════════════════════════════
-// Check if a drug is compatible with patient's chronic diseases
-  // ══════════════════════════════════════════
+  
+
+  
   async checkChronicDiseaseCompatibility(
     drugName: string,
     chronicDiseases: { name: string; status: string; medications?: string[] }[],
@@ -261,9 +261,9 @@ Be clinically accurate. Focus on real contraindications and precautions.`;
     }
   }
 
-  // ══════════════════════════════════════════
-  // Gemini —medicine details
-  // ══════════════════════════════════════════
+  
+  
+  
   private async getFromGemini(name: string): Promise<MedicineAIResult> {
     try {
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });

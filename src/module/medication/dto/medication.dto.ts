@@ -12,10 +12,10 @@ export class AddMedicationDto {
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  dosage?: string; // "500mg"
+  dosage?: string; 
 
   @IsEnum(RepeatType)
-  repeat: RepeatType; // daily | weekly | monthly | every_x_hours
+  repeat: RepeatType; 
 
   @IsOptional()
   @IsNumber()
@@ -25,7 +25,7 @@ export class AddMedicationDto {
 
   @IsString()
   @IsNotEmpty()
-  reminderTime: string; // "08:00"
+  reminderTime: string; 
 
   @IsOptional()
   @IsArray()

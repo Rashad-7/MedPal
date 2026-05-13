@@ -57,7 +57,7 @@ export function IsMatchPassword(
   };
 }
 
-// ================= DTOs =================
+
 
 export class ChronicDiseasesDto {
   @IsString()
@@ -130,7 +130,7 @@ export class loginDto {
 
   @IsString()
   @MinLength(6)
-  // @IsStrongPassword()
+  
   password: string;
 }
 export class confirmEmailDto {

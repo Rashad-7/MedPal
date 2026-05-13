@@ -1,5 +1,5 @@
 
-// import { UserRepositoryService } from './../../DB/repository/user.repository.service';
+
 import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -13,6 +13,6 @@ import { CloudService } from 'src/common/multer/cloud.service';
     imports:[UserModel,PatientModel,doctorModel],
 controllers:[AuthController],
 providers:[AuthService,PatientRepositoryService,DoctorRepositoryService,CloudService],
-// exports:[UserRepositoryService,JwtService,TokenService,UserModel]
+
 })
 export class AuthModule {}

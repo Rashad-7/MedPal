@@ -19,8 +19,8 @@ export class UserController {
   constructor(private readonly userService: UserService) {
     
   }
-//   @Roles([RoleType.USER])
-// @UseGuards(AuthGuard,AuthorizaionGuard) 
+
+
 @UseInterceptors(WatchInterceptor)
 @Auth([RoleType.ADMIN,RoleType.USER])
 @Get('profile')
@@ -59,9 +59,9 @@ return this.userService.getDoctors(query, user)
 async sendReq(@Param() param:SendRequestDto,@User("_id")senderId:mongoose.Types.ObjectId){
 return this.userService.sendRequest(senderId,param)
 }
-// @Auth([RoleType.USER])
-// @Get("myRequests")
-// async getMyRequests(@User() user: UserDocument) {
-//   return this.userService.getMyStatusRequests(user);
-// }
+
+
+
+
+
 }

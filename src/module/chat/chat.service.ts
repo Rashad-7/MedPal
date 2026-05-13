@@ -1,4 +1,4 @@
-// src/module/chat/chat.service.ts
+
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -22,7 +22,7 @@ export class ChatService {
     private readonly cloudService: CloudService,
   ) {}
 
-  // ============ إرسال رسالة نص ============
+  
   async sendMessage(
     sender: UserDocument,
     receiverId: mongoose.Types.ObjectId,
@@ -38,7 +38,7 @@ export class ChatService {
     });
   }
 
-  // ============ رفع ملف أو ريكورد ============
+  
   async uploadAttachment(
     sender: UserDocument,
     receiverId: mongoose.Types.ObjectId,
@@ -78,7 +78,7 @@ export class ChatService {
     return chat;
   }
 
-  // ============ إنشاء مكالمة ============
+  
   async initiateCall(
     sender: UserDocument,
     receiverId: mongoose.Types.ObjectId,
@@ -96,7 +96,7 @@ export class ChatService {
     return call;
   }
 
-  // ============ تحديث حالة المكالمة ============
+  
   async updateCallStatus(
     callId: string,
     status: CallStatus,
@@ -112,7 +112,7 @@ export class ChatService {
     );
   }
 
-  // ============ جلب التاريخ ============
+  
   async getHistory(
     userId: mongoose.Types.ObjectId,
     withUserId: mongoose.Types.ObjectId,
@@ -136,7 +136,7 @@ export class ChatService {
     return { messages, total: messages.length };
   }
 
-  // ============ التحقق من العلاقة ============
+  
   private async validateRelationship(
     userId: mongoose.Types.ObjectId,
     otherUserId: mongoose.Types.ObjectId,
@@ -147,7 +147,7 @@ export class ChatService {
       const hasDoctor = patient.doctors?.some(
         (d) => d.toString() === otherUserId.toString(),
       );
-      if (!hasDoctor) throw new ForbiddenException('لا يوجد علاقة مع هذا المستخدم');
+      if (!hasDoctor) throw new ForbiddenException("You can only chat with your doctor");
       return;
     }
 
@@ -156,7 +156,7 @@ export class ChatService {
       const hasPatient = doctor.patients?.some(
         (p) => p.toString() === otherUserId.toString(),
       );
-      if (!hasPatient) throw new ForbiddenException('لا يوجد علاقة مع هذا المستخدم');
+      if (!hasPatient) throw new ForbiddenException("You can only chat with your doctor");
     }
   }
 }

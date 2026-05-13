@@ -1,4 +1,4 @@
-// src/DB/repository/chat.repository.service.ts
+
 import { Injectable } from '@nestjs/common';
 import { DataBaseRepository } from './db.repository';
 import { Chat } from '../model/Chat.model';

@@ -1,4 +1,4 @@
-// src/module/superadmin/superadmin.service.ts
+
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { UserRepositoryService } from 'src/DB/repository/user.repository.service';
 import { DoctorRepositoryService } from 'src/DB/repository/doctor.repository.service';
@@ -31,7 +31,7 @@ export class SuperAdminService {
   private readonly logModel: Model<MedicationLogDocument>,
   ) {}
 
-  // ── Login ──
+  
   async login(email: string, password: string) {
     const user = await this.userRepository.findOne({
       filter: { email, role: RoleType.SUPER_ADMIN },
@@ -55,7 +55,7 @@ export class SuperAdminService {
     return { message: 'done', token: { accessToken, refreshToken } };
   }
 
-  // ── Dashboard Stats ──
+  
   async getDashboard() {
     const [totalUsers, totalDoctors, totalPatients, pendingDoctors,SOS] =
       await Promise.all([
@@ -72,7 +72,7 @@ export class SuperAdminService {
     };
   }
 
-  // ── Get All Doctors (مع فلتر الـ verified) ──
+  
   async getDoctors(isVerified?: string) {
     const filter: any = {};
     if (isVerified !== undefined) filter.isVerified = isVerified === 'true';
@@ -86,7 +86,7 @@ export class SuperAdminService {
     return { message: 'done', total: doctors.length, data: doctors };
   }
 
-  // ── Verify Doctor ──
+  
 async verifyDoctor(userId: mongoose.Types.ObjectId) {
 
   const user = await this.userRepository.findOne({
@@ -105,18 +105,18 @@ async verifyDoctor(userId: mongoose.Types.ObjectId) {
     throw new NotFoundException('Doctor profile not found');
   }
 
-  // checks BEFORE update
+  
   if (doctor.isVerified || user.isVerified) {
     throw new BadRequestException('Doctor already verified');
   }
 
-  // update user
+  
   await this.userRepository.updateOne({
     filter: { _id: userId },
     data: { isVerified: true },
   });
 
-  // update doctor
+  
   await this.doctorRepository.updateOne({
     filter: { userId: user._id },
     data: { isVerified: true },
@@ -125,21 +125,21 @@ async verifyDoctor(userId: mongoose.Types.ObjectId) {
   return { message: 'Doctor verified successfully' };
 }
 
-  // ── Reject Doctor ──
+  
   async rejectDoctor(userId: mongoose.Types.ObjectId) {
     const user = await this.userRepository.findOne({
       filter: { _id: userId, role: RoleType.ADMIN },
     });
     if (!user) throw new NotFoundException('Doctor not found');
 
-    // احذف الدكتور والـ user
+    
     await this.doctorRepository.deleteOne({ filter: { userId: user._id } });
     await this.userRepository.deleteOne({ filter: { _id: user._id } });
 
     return { message: 'Doctor rejected and removed' };
   }
 
-  // ── Get All Patients ──
+  
   async getPatients() {
     const patients = await this.patientRepository.find({
       filter: {},
@@ -150,7 +150,7 @@ async verifyDoctor(userId: mongoose.Types.ObjectId) {
     return { message: 'done', total: patients.length, data: patients };
   }
 
-  // ── Block / Unblock User ──
+  
   async toggleBlock(userId: string, block: boolean) {
     const user = await this.userRepository.findOne({ filter: { _id: userId } });
     if (!user) throw new NotFoundException('User not found');
@@ -165,7 +165,7 @@ async verifyDoctor(userId: mongoose.Types.ObjectId) {
     return { message: block ? 'User blocked' : 'User unblocked' };
   }
 
-  // ── Delete User ──
+  
   async deleteUser(userId: mongoose.Types.ObjectId) {
     const user = await this.userRepository.findOne({ filter: { _id: userId } });
     if (!user) throw new NotFoundException('User not found');
@@ -190,22 +190,22 @@ if (user.role ==RoleType.ADMIN) {
     userStatus,
     departments,
   ] = await Promise.all([
-    // Total Patients
+    
     this.patientRepository['patientModel'].countDocuments(),
 
-    // Appointments = accepted requests
+    
     this.reqModel.countDocuments({ status: 'accepted' }),
 
-    // Reports Generated = medication logs
+    
     this.logModel.countDocuments(),
 
-    // Monthly Growth آخر 6 شهور
+    
     this.getMonthlyGrowthData(),
 
-    // User Status
+    
     this.getUserStatusData(),
 
-    // Department Visits
+    
     this.getDepartmentData(),
   ]);
 
@@ -225,9 +225,9 @@ if (user.role ==RoleType.ADMIN) {
   };
 }
 
-// ── helpers ──
+
 private async getMonthlyGrowthData() {
-  const months: { month: string; patients: number; doctors: number }[] = []; // ← أضف النوع
+  const months: { month: string; patients: number; doctors: number }[] = []; 
   const now = new Date();
 
   for (let i = 5; i >= 0; i--) {

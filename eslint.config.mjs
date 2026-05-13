@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import eslint from '@eslint/js';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
@@ -34,7 +34,7 @@ export default tseslint.config(
         "eslint-disable @typescript-eslint/no-unsafe-member-access": "off",
         "eslint-disable @typescript-eslint/no-unsafe-assignment": "off",
         "no-unsafe-optional-chaining": "off",
-        // @ts-ignore
+        
         "eslint-disable @typescript-eslint/no-unsafe-member-access": "off",
         "eslint-disable @typescript-eslint/no-unsafe-enum-comparison": "off",
         "eslint-disable @typescript-eslint/no-unsafe-assignment": "off",

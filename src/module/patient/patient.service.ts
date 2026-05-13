@@ -53,7 +53,7 @@ export class PatientService {
 
     return { message: 'done', total: requests.length, data: requests };
   }
-    // ============ Get Patient Profile ============
+    
   async getMyProfile(user: UserDocument) {
     const patient = await this.patientRepositoryService.findOne({
       filter: { userId: user._id },

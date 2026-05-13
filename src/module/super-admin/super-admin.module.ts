@@ -1,4 +1,4 @@
-// src/module/superadmin/superadmin.module.ts
+
 import { Module } from '@nestjs/common';
 import { SuperAdminController } from './super-admin.controller';
 import { SuperAdminService } from './super-admin.service';

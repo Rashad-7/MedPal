@@ -1,4 +1,4 @@
-// src/DB/repository/medication.repository.service.ts
+
 import { Injectable } from '@nestjs/common';
 import { DataBaseRepository } from './db.repository';
 import { Medicine } from '../model/Medication.model';

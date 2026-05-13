@@ -40,13 +40,13 @@ async addMedication(
 ) {
   const { repeat, repeatEveryHours, reminderTime, startDate } = body;
 
-  // 1. AI data (blocking لأنه أساسي)
+  
   const aiData = await this.aiMedicineGroqService.getMedicineData(
     body.medicationName,
-    // file,
+    
   );
 
-  // 2. patient (lean + projection لو تقدر في الريبو)
+  
   const patient = await this.patientRepository.findOne({
     filter: { userId: user._id },
     options: { lean: true },
@@ -67,7 +67,7 @@ async addMedication(
       medications: d.medications,
     })) || [];
 
-  // 3. run AI checks in parallel (important optimization)
+  
   const [interactionResult, compatibilityResult] = await Promise.all([
     this.aiMedicineGroqService.checkDrugInteractions(
       aiData.medicationName,
@@ -79,7 +79,7 @@ async addMedication(
     ),
   ]);
 
-  // 4. early exit (fast fail)
+  
   if (
     interactionResult.severity === 'severe' ||
     compatibilityResult.warningLevel === 'avoid'
@@ -94,7 +94,7 @@ async addMedication(
     };
   }
 
-  // 5. upload image (IMPORTANT FIX: await it properly)
+  
   let imageData: any = undefined;
 
   if (file) {
@@ -109,16 +109,16 @@ async addMedication(
       };
     } catch (err) {
       console.error('Image upload failed:', err.message);
-      // optional: continue without image instead of failing request
+      
     }
   }
 
-  // 6. find medicine
+  
   let medicine = await this.medicineModel.findOne({
     medicationName: { $regex: `^${aiData.medicationName}$`, $options: 'i' },
   });
 
-  // 7. create if not exists
+  
   if (!medicine?.userId?.equals(user._id)) {
     medicine = await this.medicineModel.create({
       userId: user._id,
@@ -139,7 +139,7 @@ async addMedication(
     });
   }
 
-  // 8. duplicate check
+  
   const alreadyAdded = patient.medications?.some(
     (m) => m.medicineId?.toString() === medicine._id.toString(),
   );
@@ -148,7 +148,7 @@ async addMedication(
     throw new BadRequestException("You've already added this medicine");
   }
 
-  // 9. update patient
+  
   await this.patientRepository.updateOne({
     filter: { userId: user._id },
     data: {
@@ -169,7 +169,7 @@ async addMedication(
     },
   });
 
-  // 10. log + schedule
+  
   const scheduledTime = this.getFirstDoseTime(startDate, reminderTime);
 
   const log = await this.logModel.create({
@@ -181,7 +181,7 @@ async addMedication(
     scheduledTime,
   });
 
-  // fire-and-forget (good)
+  
   this.scheduleReminder({
     logId: log._id.toString(),
     patientId: user._id.toString(),
@@ -202,182 +202,182 @@ async addMedication(
     compatibilityCheck: compatibilityResult,
   };
 }
-// async addMedication(
-//   user: UserDocument,
-//   body: AddMedicationDto,
-//   file?: Express.Multer.File,
-// ) {
-//   const { repeat, repeatEveryHours, reminderTime, startDate } = body;
 
-//   // 1. get AI data
-//   const aiData = await this.aiMedicineService.getMedicineData(
-//     body.medicationName,
-//     file,
-//   );
 
-//   // 2. get patient (lean عشان أسرع)
-//   const patient = await this.patientRepository.findOne({
-//     filter: { userId: user._id },
-//     options: { lean: true },
-//   });
 
-//   if (!patient) throw new NotFoundException('Patient profile not found');
 
-//   const currentMedNames =
-//     patient.medications?.filter((m) => m.active).map((m) => m.medicationName) ||
-//     [];
 
-//   const diseases =
-//     patient.chronicDiseases?.map((d) => ({
-//       name: d.name,
-//       status: d.status,
-//       medications: d.medications,
-//     })) || [];
 
-//   // 🔥 3. run AI checks in parallel
-//   const [interactionResult, compatibilityResult] = await Promise.all([
-//     this.aiMedicineService.checkDrugInteractions(
-//       aiData.medicationName,
-//       currentMedNames,
-//     ),
-//     this.aiMedicineService.checkChronicDiseaseCompatibility(
-//       aiData.medicationName,
-//       diseases,
-//     ),
-//   ]);
 
-//   // 4. early return لو خطر
-//   if (
-//     interactionResult.severity === 'severe' ||
-//     compatibilityResult.warningLevel === 'avoid'
-//   ) {
-//     return {
-//       message: 'warning',
-//       added: false,
-//       interactionCheck: interactionResult,
-//       compatibilityCheck: compatibilityResult,
-//       warning:
-//         'this medication has severe interactions with your current medications or is not compatible with your chronic diseases. Please consult your doctor before adding it.',
-//     };
-//   }
 
-//   // 🔥 5. upload async (مش مستنيينه)
-//   let imageData;
-//   if (file) {
-//     this.cloudService
-//       .uploadFile(file, {
-//         folder: `${process.env.APP_NAME}/medicines`,
-//       })
-//       .then((uploaded) => {
-//         imageData = {
-//           secure_url: uploaded.secure_url,
-//           public_id: uploaded.public_id,
-//         };
-//       })
-//       .catch(console.error);
-//   }
 
-//   // 6. find or create medicine
-//   let medicine = await this.medicineModel.findOne({
-//     medicationName: { $regex: `^${aiData.medicationName}$`, $options: 'i' },
-//   });
 
-//   if (!medicine) {
-//     medicine = await this.medicineModel.create({
-//       medicationName: aiData.medicationName,
-//       dosage: body.dosage || aiData.dosage || 'N/A',
-//       repeat,
-//       repeatEveryHours,
-//       reminderTime,
-//       sideEffects: aiData.sideEffects,
-//       warningLevel: aiData.warningLevel || 'safe',
-//       activeIngredient: aiData.activeIngredient,
-//       genericName: aiData.genericName,
-//       category: aiData.category,
-//       contraindications: aiData.contraindications,
-//       interactions: aiData.interactions,
-//       instructions: aiData.instructions,
-//       ...(imageData && { image: imageData }),
-//     });
-//   }
 
-//   // 7. check duplicate
-//   const alreadyAdded = patient.medications?.some(
-//     (m) => m.medicineId?.toString() === medicine._id.toString(),
-//   );
 
-//   if (alreadyAdded)
-//     throw new BadRequestException("You've already added this medicine");
 
-//   // 8. update patient
-//   await this.patientRepository.updateOne({
-//     filter: { userId: user._id },
-//     data: {
-//       $push: {
-//         medications: {
-//           medicineId: medicine._id,
-//           medicationName: medicine.medicationName,
-//           dosage: body.dosage || aiData.dosage || 'N/A',
-//           repeat,
-//           repeatEveryHours,
-//           reminderTime,
-//           sideEffects: aiData.sideEffects,
-//           warningLevel: aiData.warningLevel || 'safe',
-//           startDate: new Date(startDate),
-//           active: true,
-//         },
-//       },
-//     },
-//   });
 
-//   // 9. create log
-//   const scheduledTime = this.getFirstDoseTime(startDate, reminderTime);
 
-//   const log = await this.logModel.create({
-//     patientId: user._id,
-//     medicineId: medicine._id,
-//     medicineName: medicine.medicationName,
-//     status: MedicationStatus.PENDING,
-//     attemptCount: 0,
-//     scheduledTime,
-//   });
 
-//   // 10. schedule (مش لازم await)
-//   this.scheduleReminder({
-//     logId: log._id.toString(),
-//     patientId: user._id.toString(),
-//     scheduledTime,
-//     medicineName: medicine.medicationName,
-//     repeat,
-//     repeatEveryHours,
-//     reminderTime,
-//   });
 
-//   return {
-//     message: 'Done',
-//     added: true,
-//     medicine,
-//     scheduledTime,
-//     logId: log._id,
-//     interactionCheck: interactionResult,
-//     compatibilityCheck: compatibilityResult,
-//   };
-// }
-  // ============ Get All Medicines ============
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
  
   async getAllMedicines() {
     const medicines = await this.medicineModel.find().lean();
     return { message: 'done', total: medicines.length, data: medicines };
   }
 
-  // ============ Get Single Medicine ============
+  
   async getMedicine(medicineId: string) {
     const medicine = await this.medicineModel.findById(medicineId).lean();
     if (!medicine) throw new NotFoundException('Medicine not found');
     return { message: 'done', data: medicine };
   }
 
-  // ============ Get Patient Medicines  ============
+  
   async getPatientMedications(user: UserDocument) {
     const patient = await this.patientRepository.findOne({
       filter: { userId: user._id },
@@ -392,7 +392,7 @@ async addMedication(
 
     if (!patient) throw new NotFoundException('Patient not found');
 
-//sort by warning level
+
     const grouped = {
       safe: [] as any[],
       mild: [] as any[],
@@ -413,7 +413,7 @@ async addMedication(
     };
   }
 
-  // ============ Get Medication Report ============
+  
   async getMedicationReport(user: UserDocument) {
     const [logs, patient] = await Promise.all([
       this.logModel.find({ patientId: user._id }).sort({ scheduledTime: -1 }).lean(),
@@ -427,7 +427,7 @@ async addMedication(
       ? Math.round((taken / (taken + missed)) * 100)
       : 0;
 
-    //warning
+    
     const warningMeds = patient?.medications?.filter(
       (m) => m.warningLevel === 'severe' || m.warningLevel === 'moderate',
     ) || [];
@@ -448,7 +448,7 @@ async addMedication(
     };
   }
 
-  // ============ sign medication ============
+  
   async takeMedication(user: UserDocument, logId: string) {
     const log = await this.logModel.findOne({
       _id: new mongoose.Types.ObjectId(logId),
@@ -494,7 +494,7 @@ async addMedication(
     return { message: '✅ medication signed', takenAt: log.takenAt };
   }
 
-  // ============ Reminder Logic ============
+  
   private scheduleReminder({
     logId, patientId, scheduledTime, medicineName,
     repeat, repeatEveryHours, reminderTime,
@@ -552,7 +552,7 @@ async addMedication(
     }
 
     if (attempt >= 3) {
-      // missed
+      
       log.status = MedicationStatus.MISSED;
       await log.save();
 
@@ -586,7 +586,7 @@ async addMedication(
       });
 
     } else {
-      // retry - schedule next reminder in 15 minutes
+      
       try { this.schedulerRegistry.deleteCronJob(`reminder_${logId}_${attempt}`); } catch {}
 
       const retryTime = new Date(Date.now() + 15 * 60 * 1000);
@@ -605,7 +605,7 @@ async addMedication(
     });
   }
 
-  // ============ Calculate Dose Times ============
+  
   private getFirstDoseTime(startDate: string, reminderTime: string): Date {
     const [hours, minutes] = reminderTime.split(':').map(Number);
     const date = new Date(startDate);
@@ -655,7 +655,7 @@ async addMedication(
 }
 async scanAndSave(user: UserDocument, file: Express.Multer.File) {
   if (!file) throw new BadRequestException('Image is required');
-// get medicine name from image using AI model
+
   const medicineName = await this.aiMedicineService.getMedicineNameFromImage(file);
   console.log('Detected medicine name:', medicineName);
 
@@ -670,10 +670,10 @@ async scanAndSave(user: UserDocument, file: Express.Multer.File) {
     userId: user._id,
      medicationName: medicineDetails.medicationName || medicineName,
       dosage: medicineDetails.dosage || 'Not specified',
-      repeat: RepeatType.DAILY,           // default — المريض يعدله بعدين
-      reminderTime: '08:00',              // default
+      repeat: RepeatType.DAILY,           
+      reminderTime: '08:00',              
       sideEffects: medicineDetails.sideEffects || [],
-      warningLevel: 'safe',               // default
+      warningLevel: 'safe',               
       activeIngredient: medicineDetails.activeIngredient || '',
       category: medicineDetails.category || '',
       contraindications: medicineDetails.contraindications || [],
@@ -721,7 +721,7 @@ async removeMedication(user: UserDocument, medicineId: string) {
   );
   if (!exists) throw new NotFoundException('Medicine not found in your medications');
   
-  // امسح من الـ patient medications array
+  
   await this.patientRepository.updateOne({
     filter: { userId: user._id },
     data: {
@@ -731,7 +731,7 @@ async removeMedication(user: UserDocument, medicineId: string) {
     },
   });
 
-  // امسح الـ pending logs بتاعت الدوا ده
+  
   await this.logModel.deleteMany({
     patientId: user._id,
     medicineId: new mongoose.Types.ObjectId(medicineId),
@@ -740,14 +740,14 @@ async removeMedication(user: UserDocument, medicineId: string) {
 await this.medicineModel.deleteOne({
   userId: patient.userId,
 })
-  // امسح الريمايندر لو شغال
+  
   this.clearReminderByMedicineId(medicineId);
 
   return { message: 'Medicine removed successfully' };
 }
 
 private clearReminderByMedicineId(medicineId: string) {
-  // جرب تمسح الـ jobs المحتملة
+  
   const attempts = [1, 2, 3];
   this.logModel
     .find({ medicineId: new mongoose.Types.ObjectId(medicineId), status: MedicationStatus.PENDING })

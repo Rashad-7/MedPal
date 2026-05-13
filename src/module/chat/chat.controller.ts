@@ -1,4 +1,4 @@
-// src/module/chat/chat.controller.ts
+
 import {
   Controller, Get, Post, Query, Param, Body,
   UploadedFile, UseInterceptors, UsePipes, ValidationPipe,
@@ -16,7 +16,7 @@ import mongoose from 'mongoose';
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
-  // جلب التاريخ
+  
   @Auth([RoleType.USER, RoleType.ADMIN])
   @Get('history/:withUserId')
   async getHistory(
@@ -41,7 +41,7 @@ async uploadFile(
   @Body('duration') duration: string,
   @User() user: UserDocument,
 ) {
-  // تحقق إن الـ receiverId valid ObjectId
+  
   if (!mongoose.Types.ObjectId.isValid(receiverId)) {
     throw new BadRequestException('Invalid receiverId');
   }

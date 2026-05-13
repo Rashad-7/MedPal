@@ -8,7 +8,7 @@ export class ValidateHeaderMeddelware implements NestMiddleware{
                 'in-vaild Authorization header'
             })
         }
-        // console.log('hi middelware');
+        
         return next()
         
     }

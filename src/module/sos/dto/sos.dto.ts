@@ -1,4 +1,4 @@
-// src/module/sos/dto/sos.dto.ts
+
 import { IsEnum, IsMongoId, IsNotEmpty, IsString } from 'class-validator';
 import { SOSSeverity, SOSUpdateType } from 'src/DB/model/SOS.model';
 import mongoose from 'mongoose';

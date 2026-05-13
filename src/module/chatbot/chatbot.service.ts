@@ -1,4 +1,4 @@
-// src/common/service/chatbot.service.ts
+
 import { ChatSessionDocument, ChatSessionModel } from './../../DB/model/ChatSession.model';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import Groq from 'groq-sdk';
@@ -29,14 +29,14 @@ export class ChatBotService {
     content: h.content,
   }));
 
-    // 1. جيب بيانات المريض كاملة من الداتا بيز
+    
     const patient = await this.patientRepository.findOne({
       filter: { userId: user._id },
     });
 
     if (!patient) throw new NotFoundException('Patient profile not found');
 
-    // 2. جهز context الأدوية مع الأعراض الجانبية
+    
     const medicationsContext = patient.medications?.map((m) => ({
       name: m.medicationName,
       dosage: m.dosage,
@@ -45,14 +45,14 @@ export class ChatBotService {
       active: m.active,
     })) || [];
 
-    // 3. جهز context الأمراض المزمنة
+    
     const diseasesContext = patient.chronicDiseases?.map((d) => ({
       name: d.name,
       status: d.status,
       medications: d.medications || [],
     })) || [];
 
-    // 4. ابني الـ system prompt بالبيانات الحقيقية
+    
     const systemPrompt = `You are a medical assistant chatbot for a healthcare app. You have access to the patient's real medical data from the database.
 
 PATIENT PROFILE:
@@ -90,14 +90,14 @@ YOUR ROLE:
 
 IMPORTANT: If the patient asks about a symptom and it matches a side effect of one of their medications, clearly say: "This symptom could be a side effect of [medication name]"`;
 
-    // 5. ابني conversation history
+    
     const messages: any[] = [
       { role: 'system', content: systemPrompt },
       ...recentHistory,
       { role: 'user', content: message },
     ];
 
-    // 6. بعت لـ Groq
+    
     const response = await this.groq.chat.completions.create({
       model: 'llama-3.1-8b-instant',
       messages,
@@ -120,7 +120,7 @@ IMPORTANT: If the patient asks about a symptom and it matches a side effect of o
       },
     };
   }
-  // service
+  
 async getChatHistory(user: UserDocument) {
   const session = await this.chatSessionRepository.findOne({
     filter: { userId: user._id },

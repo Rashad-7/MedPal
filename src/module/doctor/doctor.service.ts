@@ -61,10 +61,10 @@ if (!doctor) {
 
 const patientId = patinet!.userId;
 
-  // Add patient to doctor's patients list
+  
   await this.doctorRepository.updateOne({
     filter: { _id: doctor._id },
-    data: { $addToSet: { patients: request.senderId } }  // senderId = patient userId
+    data: { $addToSet: { patients: request.senderId } }  
   });
    const patient = await this.patientRepository.findOne({
     filter: { userId: new mongoose.Types.ObjectId(request.senderId) }
@@ -76,12 +76,12 @@ const patientId = patinet!.userId;
 
   await this.patientRepository.updateOne({
     filter: { _id: patient._id },
-    data: { $addToSet: { doctors:new mongoose.Types.ObjectId (request.receiverId) } }  // receiverId = doctor userId
+    data: { $addToSet: { doctors:new mongoose.Types.ObjectId (request.receiverId) } }  
   });
-//   const result = await this.doctorRepository.updateOne({
-//   filter: { _id: doctorId },
-//   data: { $addToSet: { patients: patientId } }
-// });
+
+
+
+
 await this.reqRepository.deleteOne({
   filter: { _id: new mongoose.Types.ObjectId(requestId) }
 });
@@ -98,7 +98,7 @@ async rejectRequest(
     throw new NotFoundException('Request not found');
   }
 
-  // Compare ObjectIds directly
+  
   if (!request.receiverId==userId) {
     throw new BadRequestException('Only receiver can reject request');
   }
@@ -126,7 +126,7 @@ await this.reqRepository.deleteOne({
   return { message: 'done', data: requests };
 }
 async getPatient(patientUserId: string, user: UserDocument) {
-  // تأكد إن المريض ده فعلاً في قائمة الدكتور
+  
   const doctor = await this.doctorRepository.findOne({
     filter: { userId: user._id },
   });
@@ -137,7 +137,7 @@ async getPatient(patientUserId: string, user: UserDocument) {
     (p) => p.toString() === patientUserId,
   );
 
-  // if (!isMyPatient) throw new ForbiddenException('This patient is not under your care');
+  
   const patient = await this.patientRepository.findOne({
     filter: { userId: new mongoose.Types.ObjectId(patientUserId) },
     populate: [
@@ -180,17 +180,17 @@ async getPatientsReport(
     throw new NotFoundException('Doctor not found');
   }
 
-  // فلتر المرضى
+  
   const filter: any = {
     userId: { $in: doctor.patients || [] },
   };
 
-  // لو بعت patientId هيرجع مريض واحد
+  
   if (patientId) {
     filter.userId = patientId;
   }
 
-  // جيب المرضى
+  
   const patients = await this.patientRepository.find({
     filter,
     populate: [
@@ -205,9 +205,9 @@ async getPatientsReport(
     throw new NotFoundException('No patients found');
   }
 
-  // =========================
-  // احسب الإحصائيات
-  // =========================
+  
+  
+  
   const patientsWithStats = await Promise.all(
     patients.map(async (patient: any) => {
       const activeMeds =
@@ -220,9 +220,9 @@ async getPatientsReport(
       const chronicCount =
         patient.chronicDiseases?.length || 0;
 
-      // =========================
-      // missed doses لكل دواء
-      // =========================
+      
+      
+      
       const medicationStats = await Promise.all(
         activeMeds.map(async (med: any) => {
         const missedLogs =
@@ -243,15 +243,15 @@ const missedCount = missedLogs.length;
         }),
       );
 
-      // إجمالي الجرعات الفائتة
+      
       const missedDoses = medicationStats.reduce(
         (sum, med) => sum + med.missedDoses,
         0,
       );
 
-      // =========================
-      // الحالة الصحية
-      // =========================
+      
+      
+      
       let healthStatus = 'stable';
 
       if (
@@ -299,9 +299,9 @@ const missedCount = missedLogs.length;
     }),
   );
 
-  // =========================
-  // Summary
-  // =========================
+  
+  
+  
   const summary = {
     totalPatients: patientsWithStats.length,
 

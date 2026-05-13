@@ -1,4 +1,4 @@
-// src/DB/model/Chat.model.ts
+
 import { MongooseModule, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types, HydratedDocument } from 'mongoose';
 
@@ -31,7 +31,7 @@ export class Chat {
   @Prop({ type: String })
   message?: string;
 
-  // للملفات والريكورد
+  
   @Prop({
     type: {
       secure_url: String,
@@ -39,7 +39,7 @@ export class Chat {
       fileName: String,
       fileSize: Number,
       mimeType: String,
-      duration: Number, // للصوت بالثواني
+      duration: Number, 
     },
     required: false,
   })
@@ -52,12 +52,12 @@ export class Chat {
     duration?: number;
   };
 
-  // للمكالمات
+  
   @Prop({ type: String, enum: CallStatus })
   callStatus?: CallStatus;
 
   @Prop({ type: Number })
-  callDuration?: number; // بالثواني
+  callDuration?: number; 
 
   @Prop({ type: Boolean, default: false })
   isRead: boolean;
