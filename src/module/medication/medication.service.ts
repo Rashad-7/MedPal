@@ -696,7 +696,7 @@ async checkInteraction(user: UserDocument, medicineName: string) {
     ?.filter((m) => m.active)
     .map((m) => m.medicationName) || [];
 
-  const result = await this.aiMedicineService.checkDrugInteractions(
+  const result = await this.aiMedicineGroqService.checkDrugInteractions(
     medicineName,
     currentMeds,
   );
